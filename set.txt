@@ -91,3 +91,20 @@
     판매채널: salesChannel
     상품유형: productType
     자금세탁 범죄 여부: moneyLaunderingCrime
+    
+    <!-- Google Analytics Data API library -->
+    <dependency>
+      <groupId>com.google.apis</groupId>
+      <artifactId>google-api-services-analytics</artifactId>
+      <version>v1-rev20250115-2.0.0</version>
+    </dependency>
+    
+    module FDS {
+    requires com.google.oauth.client;
+    requires com.google.api.client;
+    requires org.mongodb;
+    requires org.bson;
+    requires com.google.code.gson;
+    requires com.mongodb.client;
+}
+    

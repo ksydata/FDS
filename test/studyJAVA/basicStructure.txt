@@ -1,0 +1,62 @@
+JAVA의 기본구조
+
+// 클래스(기본 단위)
+public class Main {
+	// 리턴타입 메서드명(메서드 인자)
+	public static void main(String[] args)
+	System.out.println(0);
+}
+
+JAVA 문자열은 String 클래스를 이용하므로
+문자열을 다룰 때는 new가 불필요하며, 
+문자열끼리 + (concatenate) 할 수 있다.
+(1) String str = "hello";
+(2) String str;
+	str = "hello";
+
+String 클래스의 메서드들
+return type | 메서드명(매개변수) | 설명
+char | .charAt(int index) | 특정 위치의 문자 리턴
+boolean | string1.equals(string2) | 두 문자열 비교
+int | string1.indexOf(searchedstring) | 문자열 내에서 검색 문자열의 위치 리턴
+int | .length() | 문자열 길이를 리턴 
+String | .replace(string1, string2) | 문자열1을 2로 바꾼 문자열을 리턴
+String | .substring(int begin, int end) | begin 위치에서 end 전까지 잘라낸 문자열 리턴
+String | .trim() | 앞뒤 공백 제거한 문자열 리턴
+String | .toLowerCase() | 알파벳 소문자로 변환해 리턴
+String | .toUpperCase() | 알파벳 대문자로 변환해 리턴
+
+JAVA의 배열(선언, 생성, 할당)
+array
+index
+element
+
+int 배열 예제
+public class Main {
+	public static void main(Strin[] args)
+	// 배열 크기 지정 후 초기화
+	int[] a1 = {1, 2, 3, 4, 5};
+	
+	// 배열 크기 지정 후 값 할당
+	int[] a2 = new int[5];
+	a2[0] = 1;
+	a2[1] = 2;
+	a2[2] = 3;
+	a2[3] = 4;
+	a2[4] = 5;
+	
+	// 배열
+	System.out.println("a1 배열:");
+	for (int i = 0; i < a1.length; i++) {
+		System.out.print(a1[i] + " ");
+	}
+	System.out.println();
+	System.out.println("a2 배열:");
+	
+	for (int i = 0; i < a2.length; i++) {
+		System.out.print(a2[i] + " ");
+	}
+	System.out.println();
+}
+
+
