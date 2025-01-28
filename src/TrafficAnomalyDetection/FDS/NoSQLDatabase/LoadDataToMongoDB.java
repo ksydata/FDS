@@ -6,13 +6,14 @@ import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoCollection;
+import com.mongodb.client.MongoCursor;
 
 import org.bson.Document;
-// import org.json.JSONObject;
-//  { ... } 형식 - JSONObject로 읽는 경우
 import org.json.JSONArray;
 // [ {...}, {...} ] - JSONArray, JSON 파일이 배열로 시작하는 경우
 // import org.json.JSONTokener;
+import org.json.JSONObject;
+//{ ... } 형식 - JSONObject로 읽는 경우
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -50,6 +51,29 @@ public class LoadDataToMongoDB {
 		// collection.insertOne(document);
 
 		System.out.println(document.toJson());
+	}
+	
+	public JSONArray getDataFromCollection(String collectionName) {
+		// JSON 배열 객체 생성
+		JSONArray jsonArray = new JSONArray();
+		// MongoDB 컬렉션과 연동
+		MongoCollection<Document> collection = database.getCollection(collectionName);
+		// DB 커서 생성 - 쿼리 결과에 대한 포인터(도큐먼트의 위치정보만을 반환)
+		MongoCursor<Document> cursor = collection.find().iterator();
+		
+		try {
+			while (cursor.hasNext()) {
+				Document docs = cursor.next();
+				// 도큐먼트 객체 docs를 JSON 객체로 변환하여 Json 배열에 추가 
+				JSONObject jsonObject = new JSONObject(docs.toJson());
+				jsonArray.put(jsonObject);
+			}
+		} catch (Exception e) {
+            System.err.println("An unexpected error occurred: " + e.getMessage());
+		} finally {
+			cursor.close();
+		} 
+		return jsonArray;
 	}
 	
 	// 리소스를 정리하는 메서드
