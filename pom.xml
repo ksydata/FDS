@@ -52,18 +52,35 @@
     </dependency>
   </dependencies>
 
-  <build>
-    <sourceDirectory>src</sourceDirectory>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>3.13.0</version>
-        <configuration>
-          <release>17</release>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
-
+	<build>
+	  <sourceDirectory>src</sourceDirectory>
+	  <plugins>
+	    <!-- 컴파일러 플러그인 설정 -->
+	    <plugin>
+	      <groupId>org.apache.maven.plugins</groupId>
+	      <artifactId>maven-compiler-plugin</artifactId>
+	      <version>3.13.0</version>
+	      <configuration>
+	        <release>17</release>
+	      </configuration>
+	    </plugin>
+	
+	    <!-- exec 플러그인 추가 -->
+	    <plugin>
+	      <groupId>org.apache.maven.plugins</groupId>
+	      <artifactId>maven-exec-plugin</artifactId>
+	      <version>1.6.0</version> <!-- 최신 버전으로 변경 -->
+	      <executions>
+	        <execution>
+	          <goals>
+	            <goal>java</goal>
+	          </goals>
+	          <configuration>
+	            <mainClass>TrafficAnomalyDetection.FDS.NoSQLDatabase.MainConnectDB</mainClass> <!-- 실행할 메인 클래스 -->
+	          </configuration>
+	        </execution>
+	      </executions>
+	    </plugin>
+	  </plugins>
+	</build>
 </project>
