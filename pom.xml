@@ -1,36 +1,93 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
   <modelVersion>4.0.0</modelVersion>
+
   <groupId>FDS</groupId>
   <artifactId>FDS</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
   <dependencies>
-    <!-- Google Analytics Data API library-->
-    <!--https://central.sonatype.com/artifact/com.google.apis/google-api-services-analytics-->
+    <!-- Google OAuth Client Library -->
     <dependency>
-      <groupId>com.google.apis</groupId>
-      <artifactId>google-api-services-analytics</artifactId>
-      <version>v3-rev20190807-2.0.0</version>
+      <groupId>com.google.oauth-client</groupId>
+      <artifactId>google-oauth-client</artifactId>
+      <version>1.33.1</version>
     </dependency>
 
-    <!-- MongoDB Java Driver library-->
+    <!-- Google OAuth Jetty Support -->
+    <dependency>
+      <groupId>com.google.oauth-client</groupId>
+      <artifactId>google-oauth-client-jetty</artifactId>
+      <version>1.33.1</version>
+    </dependency>
+
+    <!-- Google API Client Library -->
+    <dependency>
+      <groupId>com.google.api-client</groupId>
+      <artifactId>google-api-client</artifactId>
+      <version>1.33.0</version>
+    </dependency>
+
+    <!-- MongoDB Java Driver library -->
     <dependency>
       <groupId>org.mongodb</groupId>
       <artifactId>mongodb-driver-sync</artifactId>
       <version>4.4.0</version>
     </dependency>
+
+    <!-- Gson for JSON Parsing library -->
+    <dependency>
+      <groupId>com.google.code.gson</groupId>
+      <artifactId>gson</artifactId>
+      <version>2.10.1</version> <!-- 최신 버전으로 변경 -->
+    </dependency>
+
+    <!-- Json library -->
+    <dependency>
+      <groupId>org.json</groupId>
+      <artifactId>json</artifactId>
+      <version>20210307</version>
+    </dependency>
   </dependencies>
 
   <build>
-    <sourceDirectory>src</sourceDirectory>
     <plugins>
+      <!-- 컴파일러 플러그인 설정 -->
       <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.13.0</version>
         <configuration>
-          <release>21</release>
+          <release>17</release> <!-- Java 17 사용 -->
         </configuration>
+      </plugin>
+
+      <!-- exec 플러그인 추가 -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-exec-plugin</artifactId>
+        <version>3.1.0</version> <!-- 최신 버전으로 변경 -->
+        <executions>
+          <execution>
+            <goals>
+              <goal>java</goal>
+            </goals>
+            <configuration>
+              <mainClass>TrafficAnomalyDetection.FDS.NoSQLDatabase.MainConnectDB</mainClass>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
+  
+  <pluginRepositories>
+  	<pluginRepository>
+  		<id>example-repo</id>
+	    <url>https://repo.maven.apache.org/maven2</url>
+	</pluginRepository>
+  </pluginRepositories>
+  
 </project>
