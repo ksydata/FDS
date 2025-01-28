@@ -8,7 +8,12 @@ import com.mongodb.client.MongoDatabase;
 import com.mongodb.client.MongoCollection;
 
 import org.bson.Document;
-import org.json.JSONObject;
+// import org.json.JSONObject;
+//  { ... } 형식 - JSONObject로 읽는 경우
+import org.json.JSONArray;
+// [ {...}, {...} ] - JSONArray, JSON 파일이 배열로 시작하는 경우
+// import org.json.JSONTokener;
+
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.io.IOException;
@@ -35,10 +40,12 @@ public class LoadDataToMongoDB {
         
         // 경로 내 파일에서 json 데이터 로드(json 대신 csv 파일을 사용 가능)
 		String jsonData = new String( Files.readAllBytes( Paths.get(filePath) ) );
-		JSONObject jsonObject = new JSONObject(jsonData);
+		JSONArray jsonArray = new JSONArray(jsonData);
+		// JSONObject jsonObject = new JSONObject(jsonData);
 		
 		// json 데이터를 MongoDB Document로 변환하여 데이터 삽입
-		Document document = Document.parse(jsonObject.toString());
+		Document document = new Document("data", jsonArray.toList());
+		// Document document = Document.parse(jsonObject.toString());
 		collection.insertOne(document);
 		// collection.insertOne(document);
 

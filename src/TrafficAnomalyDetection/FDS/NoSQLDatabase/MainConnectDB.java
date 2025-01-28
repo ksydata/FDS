@@ -3,7 +3,6 @@ package TrafficAnomalyDetection.FDS.NoSQLDatabase;
 
 import java.io.IOException;
 import java.util.Scanner;
-//import org.bson.Document;
 
 public class MainConnectDB {
 	public static void main(String[] args) {
