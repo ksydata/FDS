@@ -1,4 +1,4 @@
-package TrafficAnomalyDetection.FDS.GoogleAnalyticsData;
+package TrafficAnomalyDetection.FDS.DataAPI;
 
 // Google Analytics API(웹사이트나 앱의 방문자 통계 및 트래픽 데이터를 수집하는 도구)에 접속하기 위한 OAuth 2.0(사용자계정) 인증처리
 /*

@@ -50,6 +50,15 @@
       <artifactId>json</artifactId>
       <version>20210307</version>
     </dependency>
+    
+    <!-- https://mvnrepository.com/artifact/org.codehaus.mojo/exec-maven-plugin -->
+    <!--
+	<dependency>
+	    <groupId>org.codehaus.mojo</groupId>
+	    <artifactId>exec-maven-plugin</artifactId>
+	    <version>3.1.0</version>
+	</dependency>
+	-->
   </dependencies>
 
   <build>
@@ -66,9 +75,9 @@
 
       <!-- exec 플러그인 추가 -->
       <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-exec-plugin</artifactId>
-        <version>3.1.0</version> <!-- 최신 버전으로 변경 -->
+        <groupId>org.codehaus.mojo</groupId>
+        <artifactId>exec-maven-plugin</artifactId>
+        <version>1.6.0</version> <!-- 최신 버전으로 변경 3.1.0 에서 1.6.0 -->
         <executions>
           <execution>
             <goals>
