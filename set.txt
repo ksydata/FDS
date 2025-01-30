@@ -107,4 +107,4 @@
     requires com.google.code.gson;
     requires com.mongodb.client;
 }
-    
+    Java 파일은 src/main/java/ 하위에 있어야 Maven 빌드 시에 인식
