@@ -11,13 +11,18 @@ import com.mongodb.client.MongoCursor;
 import org.bson.Document;
 import org.json.JSONArray;
 // [ {...}, {...} ] - JSONArray, JSON 파일이 배열로 시작하는 경우
-// import org.json.JSONTokener;
 import org.json.JSONObject;
 //{ ... } 형식 - JSONObject로 읽는 경우
+import org.json.JSONTokener;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.io.IOException;
+// import java.util.HashMap;
+// import java.util.List;
+// import java.util.Map;
+// import java.util.ArrayList;
+// import java.util.Collections;
 
 
 public class LoadDataToMongoDB {
@@ -41,19 +46,28 @@ public class LoadDataToMongoDB {
         
         // 경로 내 파일에서 json 데이터 로드(json 대신 csv 파일을 사용 가능)
 		String jsonData = new String( Files.readAllBytes( Paths.get(filePath) ) );
-		JSONArray jsonArray = new JSONArray(jsonData);
+        // JSONTokener를 사용해 중복 키를 허용
+        JSONTokener tokener = new JSONTokener(jsonData);
+        JSONArray jsonArray = new JSONArray(tokener);
 		// JSONObject jsonObject = new JSONObject(jsonData);
 		
-		// json 데이터를 MongoDB Document로 변환하여 데이터 삽입
-		Document document = new Document("data", jsonArray.toList());
-		// Document document = Document.parse(jsonObject.toString());
-		collection.insertOne(document);
-		// collection.insertOne(document);
+		// 중복된 키가 있는 경우(예: 호스트 IP주소가 두 개인 트래픽 - AWS, Google Cloud 등 트래픽 분산 처리하는 네트워크/클라우드 환경)
+		for (int i = 0; i < jsonArray.length(); i++) {
+			JSONObject jsonObject = jsonArray.getJSONObject(i);
+			
+			// json 데이터를 MongoDB Document로 변환하여 데이터 삽입
+			Document document = new Document("data", jsonArray.toString());
+				// Document document = Document.parse(jsonObject.toString());
+			
+			// 중복된 키를 데이터베이스 컬렉션 내 삽입 허용 
+			collection.insertOne(document);
+				// collection.insertOne(document);
 
-		System.out.println(document.toJson());
+			System.out.println(document.toJson());
+		}
 	}
 	
-	public JSONArray getDataFromCollection(String collectionName) {
+	public JSONArray getDataFromCollectionAsArray(String collectionName) {
 		// JSON 배열 객체 생성
 		JSONArray jsonArray = new JSONArray();
 		// MongoDB 컬렉션과 연동
@@ -75,6 +89,20 @@ public class LoadDataToMongoDB {
 		} 
 		return jsonArray;
 	}
+	
+    // MongoDB 컬렉션에서 단일 객체로 조회
+    public JSONObject getDataFromCollectionAsObject(String collectionName, String objectId) {
+        MongoCollection<Document> collection = database.getCollection(collectionName);
+        Document query = new Document("_id", new org.bson.types.ObjectId(objectId));  
+        Document result = collection.find(query).first();
+
+        if (result != null) {
+            return new JSONObject(result.toJson());
+        } else {
+            return null;
+        }
+    }
+
 	
 	// 리소스를 정리하는 메서드
 	public void close() {
