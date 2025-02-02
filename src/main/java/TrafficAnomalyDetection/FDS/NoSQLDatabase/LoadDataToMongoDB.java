@@ -52,19 +52,28 @@ public class LoadDataToMongoDB {
 		// JSONObject jsonObject = new JSONObject(jsonData);
 		
 		// 중복된 키가 있는 경우(예: 호스트 IP주소가 두 개인 트래픽 - AWS, Google Cloud 등 트래픽 분산 처리하는 네트워크/클라우드 환경)
-		for (int i = 0; i < jsonArray.length(); i++) {
-			JSONObject jsonObject = jsonArray.getJSONObject(i);
-			
-			// json 데이터를 MongoDB Document로 변환하여 데이터 삽입
-			Document document = new Document("data", jsonArray.toString());
-				// Document document = Document.parse(jsonObject.toString());
-			
-			// 중복된 키를 데이터베이스 컬렉션 내 삽입 허용 
-			collection.insertOne(document);
-				// collection.insertOne(document);
+//		for (int i = 0; i < jsonArray.length(); i++) {
+//			JSONObject jsonObject = jsonArray.getJSONObject(i);
+//			
+//			// json 데이터를 MongoDB Document로 변환하여 데이터 삽입
+//			Document document = new Document("data", jsonArray.toString());
+//				// Document document = Document.parse(jsonObject.toString());
+//			
+//			// 중복된 키를 데이터베이스 컬렉션 내 삽입 허용 
+//			collection.insertOne(document);
+//				// collection.insertOne(document);
+//
+//			System.out.println(document.toJson());
+		
+        // json 데이터를 MongoDB Document로 변환하여 데이터 삽입
+ 		Document document = new Document("data", jsonArray.toList());
+ 		// Document document = Document.parse(jsonObject.toString());
+ 		collection.insertOne(document);
+ 		// collection.insertOne(document);
 
-			System.out.println(document.toJson());
-		}
+ 		System.out.println(document.toJson());
+	
+//		}
 	}
 	
 	public JSONArray getDataFromCollectionAsArray(String collectionName) {
