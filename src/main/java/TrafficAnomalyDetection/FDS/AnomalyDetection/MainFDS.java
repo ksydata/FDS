@@ -5,8 +5,8 @@ import TrafficAnomalyDetection.FDS.NoSQLDatabase.LoadDataToMongoDB;
 
 import java.io.IOException;
 import java.util.Scanner;
- import org.json.JSONArray;
-import org.json.JSONObject;
+import org.json.JSONArray;
+
 
 public class MainFDS {
     public static void main(String[] args) {
@@ -14,10 +14,8 @@ public class MainFDS {
         System.out.print("Enter mongoDB collection name: ");
         String collectionName = scanner.nextLine();
         
-//        System.out.print("Enter ObjectId: ");
-//        String objectId = scanner.nextLine();
-        System.out.print("Enter Filepath: ");
-        String filePath = scanner.nextLine();
+        // System.out.print("Enter ObjectId: ");
+        // String objectId = scanner.nextLine();
         
         // 연결상수 enum에서 DB 연결정보 가져오기
         String connectionString = ConfigureMongoDB.CONNECTION_STRING.getValue();
@@ -25,24 +23,14 @@ public class MainFDS {
     
         // LoadDataToMongoDB(MongoDB와 상호작용하는 기능) 클래스의 인스턴스 생성
         LoadDataToMongoDB mongoDBHandler = new LoadDataToMongoDB(connectionString, dbName);
-        try {
-			mongoDBHandler.insertDataFromFile(collectionName, filePath);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
         
         // MongoDB에서 데이터 불러오기
-//        JSONObject jsonDataObject = mongoDBHandler.getDataFromCollectionAsObject(collectionName, objectId);
-        JSONArray jsonDataArray = mongoDBHandler.getDataFromCollectionAsArray(collectionName);
-        
+        JSONArray jsonDataArray= mongoDBHandler.getDataFromCollectionAsArray(collectionName);
         
         // NetworkFlow 기능 클래스의 인스턴스 생성
         NetworkFlow networkFlow = new NetworkFlow();
         // 이상행위 탐지 로직 적용
-//        networkFlow.executeDetection(jsonDataObject);
-		networkFlow.executeDetection(jsonDataArray);
-
+        networkFlow.executeDetection(jsonDataArray);
         
         // 객체 리소스 종료
         mongoDBHandler.close();
