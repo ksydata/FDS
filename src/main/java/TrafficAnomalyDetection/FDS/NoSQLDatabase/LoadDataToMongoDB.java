@@ -6,6 +6,7 @@ import com.fasterxml.jackson.annotation.JsonAnySetter;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 // import com.mongodb.*;
 import com.mongodb.client.MongoClient;
@@ -57,68 +58,26 @@ public class LoadDataToMongoDB {
         
         // 경로 내 파일에서 json 데이터 로드(json 대신 csv 파일을 사용 가능)
 		String jsonData = new String( Files.readAllBytes( Paths.get(filePath) ) );
-//		System.out.print(jsonData);
 		
-		// 참고: https://stackoverflow.com/questions/64181422/deserialize-json-with-duplicate-keys-using-jackson
+		// Jackson ObjectMapper 불러오기
 		ObjectMapper mapper = new ObjectMapper();
-		Test test = mapper.readValue(jsonData, Test.class);
-		Map<String, List<String>> keyValuesMap = test.getKeyValuesMap();
-        System.out.println(mapper.writerWithDefaultPrettyPrinter()
-                .writeValueAsString(keyValuesMap));
-		
-//		JsonFactory factory = new JsonFactory();
-//		JsonParser parser = factory.createJsonParser(Files.readAllBytes( Paths.get(filePath)));
-//		parser.nextToken();  
-//	    int count=0;
-//	    while (parser.nextToken() != JsonToken.NOT_AVAILABLE) {    //loop until "}"
-//	    	System.out.println(parser.nextToken());
-//	        String fieldName = parser.getCurrentName();
-//
-//	        if(fieldName==null){
-//	            break;
-//	        }
-//	        if(fieldName.equals("C")&&parser.getText().equals("C")){
-//	            count++;
-//	        }
-//	        if (fieldName.equals("A")) {
-//	            parser.nextToken();
-//	            System.out.println("Value : " + parser.getText());
-//	        }
-//	    }
-//	    System.out.println(count);
-//	    parser.close();
-		
-		
-        // JSONTokener를 사용해 중복 키를 허용
-        JSONTokener tokener = new JSONTokener(jsonData);
-        
-//		JSONObject jsonObject = new JSONObject(jsonData);
-//        JSONObject jsonObject = new JSONObject(tokener);
-        JSONArray jsonArray = new JSONArray(tokener);
-		
-		// 중복된 키가 있는 경우(예: 호스트 IP주소가 두 개인 트래픽 - AWS, Google Cloud 등 트래픽 분산 처리하는 네트워크/클라우드 환경)
-//		for (int i = 0; i < jsonArray.length(); i++) {
-//			JSONObject jsonObject = jsonArray.getJSONObject(i);
-//			
-//			// json 데이터를 MongoDB Document로 변환하여 데이터 삽입
-//			Document document = new Document("data", jsonArray.toString());
-//				// Document document = Document.parse(jsonObject.toString());
-//			
-//			// 중복된 키를 데이터베이스 컬렉션 내 삽입 허용 
-//			collection.insertOne(document);
-//				// collection.insertOne(document);
-//
-//			System.out.println(document.toJson());
-		
-        // json 데이터를 MongoDB Document로 변환하여 데이터 삽입
- 		Document document = new Document("data", jsonArray.toList());
-// 		Document document = Document.parse(jsonObject.toString());
- 		collection.insertOne(document);
- 		// collection.insertOne(document);
 
- 		System.out.println(document.toJson());
-	
-//		}
+		// JSON 데이터를 List<MapSource>로 매핑
+        List<MapSource> SourceList = mapper.readValue(jsonData, new TypeReference<List<MapSource>>() {});
+
+        // 결과 출력
+        for (MapSource source : SourceList) {
+        	// test.getSource()를 MongoDB에 삽입할 Document로 변환
+            Document doc = new Document("data", source.getSource());  // Source 값을 "data" 필드로 삽입
+
+            // MongoDB에 삽입
+            collection.insertOne(doc);
+
+            // 결과 출력 (JSON 형태로 보기)
+            System.out.println(mapper.writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(doc));
+        }
+		
 	}
 	
 	public JSONArray getDataFromCollectionAsArray(String collectionName) {
@@ -156,10 +115,6 @@ public class LoadDataToMongoDB {
             return null;
         }
     }
-    
-    // JSON 파일의 중복 필드 정리  (예: {'ip': 200, 'ip: 300} 을 {'ip': [200, 300]}으로 정리하기)
-    // 원하는 방법: jsonArray.getJSONObject(i); 에서 중복 필드가 나올 때 (= IOException 발생), 
-    // 그 중복 필드들을 한 리스트로 묶어주기
    
 	
 	// 리소스를 정리하는 메서드
