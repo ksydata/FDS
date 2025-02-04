@@ -1,11 +1,6 @@
 // MongoDB와 상호작용하는 기능을 담당하는 클래스 LoadDataToMongoDB.java
 package TrafficAnomalyDetection.FDS.NoSQLDatabase;
 
-import com.fasterxml.jackson.annotation.JsonAnyGetter;
-import com.fasterxml.jackson.annotation.JsonAnySetter;
-import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonParser;
-import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 // import com.mongodb.*;
@@ -17,24 +12,16 @@ import com.mongodb.client.MongoCursor;
 
 import org.bson.Document;
 import org.json.JSONArray;
-import org.json.JSONException;
 // [ {...}, {...} ] - JSONArray, JSON 파일이 배열로 시작하는 경우
 import org.json.JSONObject;
 //{ ... } 형식 - JSONObject로 읽는 경우
-import org.json.JSONTokener;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.HashMap;
+
 import java.util.List;
-import java.util.Map;
+
 import java.io.IOException;
- import java.util.HashMap;
- import java.util.List;
- import java.util.Map;
- import java.util.ArrayList;
- import java.util.Collections;
 
 
 public class LoadDataToMongoDB {
