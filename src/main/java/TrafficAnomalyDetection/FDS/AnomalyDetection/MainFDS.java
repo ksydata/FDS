@@ -13,6 +13,8 @@ public class MainFDS {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Enter mongoDB collection name: ");
         String collectionName = scanner.nextLine();
+        System.out.print("Enter detection type: ");
+        String abnormalType = scanner.nextLine();
         
         // System.out.print("Enter ObjectId: ");
         // String objectId = scanner.nextLine();
@@ -30,7 +32,7 @@ public class MainFDS {
         // NetworkFlow 기능 클래스의 인스턴스 생성
         NetworkFlow networkFlow = new NetworkFlow();
         // 이상행위 탐지 로직 적용
-        networkFlow.executeDetection(jsonDataArray);
+        networkFlow.executeDetection(jsonDataArray, abnormalType);
         
         // 객체 리소스 종료
         mongoDBHandler.close();
