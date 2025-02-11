@@ -13,11 +13,8 @@ public class MainFDS {
         Scanner scanner = new Scanner(System.in);
         System.out.print("Enter mongoDB collection name: ");
         String collectionName = scanner.nextLine();
-        System.out.print("Enter detection type: ");
-        String abnormalType = scanner.nextLine();
-        
-        // System.out.print("Enter ObjectId: ");
-        // String objectId = scanner.nextLine();
+        System.out.print("Enter anomaly detection type: ");
+        String detectionType = scanner.nextLine();
         
         // 연결상수 enum에서 DB 연결정보 가져오기
         String connectionString = ConfigureMongoDB.CONNECTION_STRING.getValue();
@@ -29,10 +26,13 @@ public class MainFDS {
         // MongoDB에서 데이터 불러오기
         JSONArray jsonDataArray= mongoDBHandler.getDataFromCollectionAsArray(collectionName);
         
-        // NetworkFlow 기능 클래스의 인스턴스 생성
-        NetworkFlow networkFlow = new NetworkFlow();
-        // 이상행위 탐지 로직 적용
-        networkFlow.executeDetection(jsonDataArray, abnormalType);
+        AnomalyDetection packetAnalysis = AnomalyDetectionFactory.getAnomalyDetection(detectionType);
+        if (packetAnalysis != null) {
+        	packetAnalysis.executeDetection(jsonDataArray);
+        } else {
+        	System.out.println("Invalid anomaly detection type");
+        }
+        
         
         // 객체 리소스 종료
         mongoDBHandler.close();
