@@ -18,6 +18,8 @@ public class AnomalyDetectionFactory {
 			return new SQLInjectionDetection();
 		 } else if (detectionType.equalsIgnoreCase("XSSInjection")) {
 			return new XSSDetection();
+		 } else if (detectionType.equalsIgnoreCase("Dridex")) {
+			 return new DridexDetection();
 		 } else {
 			System.out.println("No proper detection type!");
 		 }
