@@ -20,6 +20,8 @@ public class AnomalyDetectionFactory {
 			return new XSSDetection();
 		 } else if (detectionType.equalsIgnoreCase("Dridex")) {
 			 return new DridexDetection();
+		 } else if (detectionType.equalsIgnoreCase("SYNFlood")) {
+			 return new SYNFloodDetection();
 		 } else {
 			System.out.println("No proper detection type!");
 		 }
