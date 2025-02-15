@@ -27,7 +27,6 @@ public class SYNFloodDetection extends AnomalyDetection {
 		
 		// 판별된 패킷 중에서 tcp -> tcp.flags_tree -> "tcp.flags.syn" = "1" 찾기
 		int count = 0;
-		int initialCount = 0;
 		for (int i = 0; i < TCPPackets.length(); i++) {
 			JSONObject packet = TCPPackets.getJSONObject(i);
 	    	JSONObject data = packet.getJSONObject("data");
@@ -52,8 +51,6 @@ public class SYNFloodDetection extends AnomalyDetection {
                 initialCount++;
             }
 		}
-		
-		System.out.println(initialCount);
 		
 	}
 }
