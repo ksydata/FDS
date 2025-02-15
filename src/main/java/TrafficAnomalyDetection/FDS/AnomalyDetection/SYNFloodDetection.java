@@ -42,13 +42,13 @@ public class SYNFloodDetection extends AnomalyDetection {
             if (isSyn && !isAck) { // SYN 플래그만 세트됨 (SYN 요청)
                 count++;
 //                System.out.println("SYN 패킷 감지! 현재 카운트: " + count);
+                
                 // "tcp.flags.syn" = "1" & "tcp.flags.ack" = "0" 만 5회 이상 반복되면 SYN Flood로 판별
                 if (count >= 5) {
                     System.out.print("🚨 SYN Flood 공격 감지! 🚨 현재 카운트: " + count);
                 }
             } else if (isAck) { // ACK 플래그가 세트됨 (정상 응답 발생)
                 count = 0;
-                initialCount++;
             }
 		}
 		

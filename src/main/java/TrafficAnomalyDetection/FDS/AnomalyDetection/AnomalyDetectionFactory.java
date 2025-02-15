@@ -22,6 +22,8 @@ public class AnomalyDetectionFactory {
 			 return new DridexDetection();
 		 } else if (detectionType.equalsIgnoreCase("SYNFlood")) {
 			 return new SYNFloodDetection();
+		 } else if (detectionType.equalsIgnoreCase("QUIC")) {
+			 return new QUICDetection();
 		 } else {
 			System.out.println("No proper detection type!");
 		 }
