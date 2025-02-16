@@ -1,6 +1,8 @@
 // MongoDB와 상호작용하는 기능을 담당하는 클래스 LoadDataToMongoDB.java
 package TrafficAnomalyDetection.FDS.NoSQLDatabase;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 // import com.mongodb.*;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
@@ -11,12 +13,14 @@ import com.mongodb.client.MongoCursor;
 import org.bson.Document;
 import org.json.JSONArray;
 // [ {...}, {...} ] - JSONArray, JSON 파일이 배열로 시작하는 경우
-// import org.json.JSONTokener;
 import org.json.JSONObject;
 //{ ... } 형식 - JSONObject로 읽는 경우
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
+
+import java.util.List;
+
 import java.io.IOException;
 
 
@@ -41,19 +45,29 @@ public class LoadDataToMongoDB {
         
         // 경로 내 파일에서 json 데이터 로드(json 대신 csv 파일을 사용 가능)
 		String jsonData = new String( Files.readAllBytes( Paths.get(filePath) ) );
-		JSONArray jsonArray = new JSONArray(jsonData);
-		// JSONObject jsonObject = new JSONObject(jsonData);
 		
-		// json 데이터를 MongoDB Document로 변환하여 데이터 삽입
-		Document document = new Document("data", jsonArray.toList());
-		// Document document = Document.parse(jsonObject.toString());
-		collection.insertOne(document);
-		// collection.insertOne(document);
+		// Jackson ObjectMapper 불러오기
+		ObjectMapper mapper = new ObjectMapper();
 
-		System.out.println(document.toJson());
+		// JSON 데이터를 List<MapSource>로 매핑
+        List<MapSource> SourceList = mapper.readValue(jsonData, new TypeReference<List<MapSource>>() {});
+
+        // 결과 출력
+        for (MapSource source : SourceList) {
+        	// test.getSource()를 MongoDB에 삽입할 Document로 변환
+            Document doc = new Document("data", source.getSource());  // Source 값을 "data" 필드로 삽입
+
+            // MongoDB에 삽입
+            collection.insertOne(doc);
+
+            // 결과 출력 (JSON 형태로 보기)
+            System.out.println(mapper.writerWithDefaultPrettyPrinter()
+                    .writeValueAsString(doc));
+        }
+		
 	}
 	
-	public JSONArray getDataFromCollection(String collectionName) {
+	public JSONArray getDataFromCollectionAsArray(String collectionName) {
 		// JSON 배열 객체 생성
 		JSONArray jsonArray = new JSONArray();
 		// MongoDB 컬렉션과 연동
@@ -75,6 +89,20 @@ public class LoadDataToMongoDB {
 		} 
 		return jsonArray;
 	}
+	
+    // MongoDB 컬렉션에서 단일 객체로 조회
+    public JSONObject getDataFromCollectionAsObject(String collectionName, String objectId) {
+        MongoCollection<Document> collection = database.getCollection(collectionName);
+        Document query = new Document("_id", new org.bson.types.ObjectId(objectId));  
+        Document result = collection.find(query).first();
+
+        if (result != null) {
+            return new JSONObject(result.toJson());
+        } else {
+            return null;
+        }
+    }
+   
 	
 	// 리소스를 정리하는 메서드
 	public void close() {
