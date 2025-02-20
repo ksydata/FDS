@@ -1,2 +1,51 @@
 # TCP protocol network traffic packet analysis
 
+# 실행 클래스 MainFDS.java
+package TrafficAnomalyDetection.FDS.AnomalyDetection;
+import TrafficAnomalyDetection.FDS.NoSQLDatabase.ConfigureMongoDB;
+import TrafficAnomalyDetection.FDS.NoSQLDatabase.LoadDataToMongoDB;
+import java.io.IOException;
+import java.util.Scanner;
+import org.json.JSONArray;
+
+public class MainFDS {
+    public static void main(String[] args) {
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter mongoDB collection name: ");
+        String collectionName = scanner.nextLine();
+        System.out.print("Enter anomaly detection type: ");
+        String detectionType = scanner.nextLine();
+        
+        // 연결상수 enum에서 DB 연결정보 가져오기
+        String connectionString = ConfigureMongoDB.CONNECTION_STRING.getValue();
+        String dbName = ConfigureMongoDB.DATABASE_NAME.getValue();
+    
+        // LoadDataToMongoDB(MongoDB와 상호작용하는 기능) 클래스의 인스턴스 생성
+        LoadDataToMongoDB mongoDBHandler = new LoadDataToMongoDB(connectionString, dbName);
+        
+        // MongoDB에서 데이터 불러오기
+        JSONArray jsonDataArray= mongoDBHandler.getDataFromCollectionAsArray(collectionName);
+        
+        AnomalyDetection packetAnalysis = AnomalyDetectionFactory.getAnomalyDetection(detectionType);
+        if (packetAnalysis != null) {
+        	packetAnalysis.executeDetection(jsonDataArray);
+        } else {
+        	System.out.println("Invalid anomaly detection type");
+        }
+        // 객체 리소스 종료
+        mongoDBHandler.close();
+        scanner.close();
+    }
+}
+
+# 추상 클래스 AnomalyDetection.java
+package TrafficAnomalyDetection.FDS.AnomalyDetection;
+import org.json.JSONArray;
+
+public abstract class AnomalyDetection {
+    public abstract void executeDetection(JSONArray jsonDataArray);
+}
+
+# 구체 클래스(기능)
+TCP_SYN / RST_ACK
+UDP/ICMP
