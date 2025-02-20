@@ -2,6 +2,8 @@ package TrafficAnomalyDetection.FDS.AnomalyDetection;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
+// https://ggonmerr.tistory.com/38
+// https://blog.naver.com/stop2y/221018537228
 
 public class AnalysisPacket extends AnomalyDetection {
 	@Override
@@ -17,30 +19,25 @@ public class AnalysisPacket extends AnomalyDetection {
                 JSONObject layers = source.getJSONObject("layers");
 			// JSONObject layers = packet.getJSONObject("_source").getJSONObject("layers");
 		            
-				// HTTP 패킷 여부 확인
-				if (layers.has("http")) {
-	                JSONObject httpLayer = layers.getJSONObject("http");
-					
-					// 1. HTTP 메서드 확인
-					if (httpLayer.has("http.request.method")) {
-						String method = httpLayer.getString("http.request.method");
-						System.out.println("HTTP Method: " + method);
-					}
-				
-					// 2. HTTPS 적용 여부
-	                /*
-					if (packet.getJSONObject("_source").getJSONObject("layers").has("ssl")) {
-	                	System.out.println("SSL/TLS is enabled");
-	                }              } else {
-	                    System.out.println("Warning: HTTP traffic without SSL/TLS.");
-	                */  
-					// 3. HTTP 헤더 분석
-					
-					// 4. HTTP 요청 패킷 내 Payload 검사(GET, POST 파라미터에서 SQL 인젝션, XSS 공격패턴 탐지 목적)
+				// TCP 패킷 여부 확인
+				if (layers.has("tcp")) {
+	                JSONObject tcpLayer = layers.getJSONObject("tcp");
+	                // 'tcp_srcport'. 'tcp_dstport', 'tcp_flags'
+	                if (tcpLayer.has("tcp_flags")) {
+	                	String tcpFlag = tcpLayer.getJSONArray("tcp_flags").getString(0);
+	                	
+	                	if (tcpFlag.contains("")) {
+	                		System.out.println("Scan")
+	                		// Closed Port 0x14(RST+ACK)
+	                		// Stealth Scan-FIN Scan0x001(FIN)
+	                		// X-mas Scan 0x029(FIN, PSH, URG)
+	                		// NULL Scan 0x000 <None>
+	                	}
+	                }
 	                    
 				}
             } else {
-                System.out.println("No '_source' field found for packet");
+                System.out.println("No '_source' or 'data' field found for packet");
             }
         }
     }
