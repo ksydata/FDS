@@ -11,8 +11,6 @@ public class PortScanDetection extends AnomalyDetection {
 	
 	public boolean TCPDetection(JSONObject packet) {
 		// 패킷이 TCP 프로토콜인지 구별
-//    	JSONObject data = packet.getJSONObject("data");
-//    	JSONObject layers = data.getJSONObject("layers");
     	JSONObject layers = getPacketLayers(packet);
     	JSONObject frame = layers.getJSONObject("frame");
     	
@@ -32,8 +30,6 @@ public class PortScanDetection extends AnomalyDetection {
 
 	public String FlagDetection(JSONObject packet) {
 		// 각 패킷의 플래그가 [SYN], [ACK], [RST], [SYN, ACK] 중 무엇인지 확인
-//		JSONObject data = packet.getJSONObject("data");
-//    	JSONObject layers = data.getJSONObject("layers");
     	JSONObject layers = getPacketLayers(packet);
     	JSONObject tcp = layers.getJSONObject("tcp");
     	
@@ -69,14 +65,15 @@ public class PortScanDetection extends AnomalyDetection {
 		// 패킷 수순에 따라 열린 포트와 닫힌 포트를 구별하여 판독
 		for (int i = 0; i < jsonDataArray.length(); i++) {
 			JSONObject packet = jsonDataArray.getJSONObject(i);
-			JSONObject layers = getPacketLayers(packet);
-			JSONObject ip = layers.getJSONObject("ip");
-			JSONObject tcp = layers.getJSONObject("tcp");
+
 			
-			if (TCPDetection(packet)) {
+			if (TCPDetection(packet) && i+1 < jsonDataArray.length()) {
+				JSONObject layers = getPacketLayers(packet);
+				JSONObject ip = layers.getJSONObject("ip");
+				JSONObject tcp = layers.getJSONObject("tcp");
+				JSONObject targetPkt = jsonDataArray.getJSONObject(i+1);
 				
-				if (FlagDetection(packet).equals("SYN")) {
-					JSONObject targetPkt = jsonDataArray.getJSONObject(i+1);
+				if (FlagDetection(packet).equals("SYN") && TCPDetection(targetPkt)) {
 					JSONObject targetLayers = getPacketLayers(targetPkt);
 					JSONObject targetIp = targetLayers.getJSONObject("ip");
 			    	JSONObject targetTcp = targetLayers.getJSONObject("tcp");
