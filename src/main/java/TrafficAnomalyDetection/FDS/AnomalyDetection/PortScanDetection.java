@@ -15,6 +15,8 @@ public class PortScanDetection extends AnomalyDetection {
 			halpOpenScanDetection(jsonDataArray);
 		} else if (scanType.equalsIgnoreCase("FIN_SCAN")) {
 			FINScanDetection(jsonDataArray);
+		} else if (scanType.equalsIgnoreCase("XMAS_SCAN")) {
+			XMASScanDetection(jsonDataArray);
 		}
 		
 		scanner.close();		
@@ -67,6 +69,10 @@ public class PortScanDetection extends AnomalyDetection {
     	// 패킷 플래그가 [FIN] 인 경우
     	else if (tcp.get("tcp.flags").equals("0x0001")) {
     		return "FIN";
+    	}
+    	// 패킷 플래그가 [FIN, PSH, URG] 인 경우
+    	else if (tcp.get("tcp.flags").equals("0x0029")) {
+    		return "FIN-PSH-URG";
     	}
     	// 그 외
     	else {
@@ -123,7 +129,7 @@ public class PortScanDetection extends AnomalyDetection {
 	}
 	
 	public void FINScanDetection(JSONArray jsonDataArray) {
-		// [FIN] 패킷 전달 후 응답이 없는 경우를 판별
+		// FIN Scan: [FIN] 패킷 전달 후 응답이 없는 경우를 판별
 		for (int i = 0; i < jsonDataArray.length(); i++) {
 			JSONObject packet = jsonDataArray.getJSONObject(i);
 			
@@ -138,8 +144,7 @@ public class PortScanDetection extends AnomalyDetection {
 					JSONObject targetLayers = getPacketLayers(targetPkt);
 					JSONObject targetIp = targetLayers.getJSONObject("ip");
 					
-					// 첫 패킷이 {"ip.src": "10.111.222.333", "ip.dst": "33.222.444.555"} 일 때
-			    	// 두번째 패킷이 {"ip.src": "33.222.444.555", "ip.dst": "10.111.222.333"} 인 구성인지 확인하기
+					// 첫 패킷과 두번째 패킷이 동일한 ip.src 와 ip.dst를 갖고 있는지 확인하기
 			    	String ipSrc = ip.getString("ip.src");
 			    	String ipDst = ip.getString("ip.dst");
 			    	String targetIpSrc = targetIp.getString("ip.src");
@@ -154,6 +159,39 @@ public class PortScanDetection extends AnomalyDetection {
 				}
 			}
 				
+		}
+	}
+	
+	public void XMASScanDetection(JSONArray jsonDataArray) {
+		// XMas Scan: [FIN, PSH, URG] 패킷 전달 후 응답이 없는 경우를 판별
+		for (int i = 0; i < jsonDataArray.length(); i++) {
+			JSONObject packet = jsonDataArray.getJSONObject(i);
+			
+			if (TCPDetection(packet) && (i+1 < jsonDataArray.length())) {
+				JSONObject layers = getPacketLayers(packet);
+				JSONObject ip = layers.getJSONObject("ip");
+				JSONObject tcp = layers.getJSONObject("tcp");
+				JSONObject targetPkt = jsonDataArray.getJSONObject(i+1);
+				
+				if (FlagDetection(packet).equals("FIN-PSH-URG") && TCPDetection(targetPkt)) {
+					JSONObject targetLayers = getPacketLayers(targetPkt);
+					JSONObject targetIp = targetLayers.getJSONObject("ip");
+					
+					// 첫 패킷과 두번째 패킷이 동일한 ip.src 와 ip.dst를 갖고 있는지 확인하기
+					String ipSrc = ip.getString("ip.src");
+			    	String ipDst = ip.getString("ip.dst");
+			    	String targetIpSrc = targetIp.getString("ip.src");
+			    	String targetIpDst = targetIp.getString("ip.dst");
+			    	
+			    	if (ipSrc.equals(targetIpSrc) && ipDst.equals(targetIpDst)) {
+			    		if (FlagDetection(targetPkt).equals("FIN-PSH-URG")) {
+			    			String closedPort = tcp.getString("tcp.dstport");
+			    			System.out.println("Closed: " + ipDst + ":" + closedPort);
+			    		}
+			    	} 
+				}
+				
+			}
 		}
 	}
 	
