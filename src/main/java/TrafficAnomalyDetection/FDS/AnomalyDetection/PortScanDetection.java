@@ -17,6 +17,8 @@ public class PortScanDetection extends AnomalyDetection {
 			FINScanDetection(jsonDataArray);
 		} else if (scanType.equalsIgnoreCase("XMAS_SCAN")) {
 			XMASScanDetection(jsonDataArray);
+		} else if (scanType.equalsIgnoreCase("NULL_SCAN")) {
+			NULLScanDetection(jsonDataArray);
 		}
 		
 		scanner.close();		
@@ -74,6 +76,10 @@ public class PortScanDetection extends AnomalyDetection {
     	else if (tcp.get("tcp.flags").equals("0x0029")) {
     		return "FIN-PSH-URG";
     	}
+    	// 패킷 플래그가 [Null] 인 경우
+    	else if (tcp.get("tcp.flags").equals("0x0000")) {
+    		return "NULL";
+    	}
     	// 그 외
     	else {
     		return "ETC";
@@ -125,6 +131,7 @@ public class PortScanDetection extends AnomalyDetection {
 				
 			}
 		}
+		System.out.println("------- Half Open Scan Completed! --------");
 		
 	}
 	
@@ -160,6 +167,7 @@ public class PortScanDetection extends AnomalyDetection {
 			}
 				
 		}
+		System.out.println("------- FIN Scan Completed! --------");
 	}
 	
 	public void XMASScanDetection(JSONArray jsonDataArray) {
@@ -193,6 +201,43 @@ public class PortScanDetection extends AnomalyDetection {
 				
 			}
 		}
+		
+		System.out.println("-------- XMas Scan Completed! ---------");
+	}
+	
+	public void NULLScanDetection(JSONArray jsonDataArray) {
+		// Null Scan: [Null] 패킷 전달 후 응답이 없는 경우를 판별
+		for (int i = 0; i < jsonDataArray.length(); i++) {
+			JSONObject packet = jsonDataArray.getJSONObject(i);
+			
+			if (TCPDetection(packet) && (i+1 < jsonDataArray.length())) {
+				JSONObject layers = getPacketLayers(packet);
+				JSONObject ip = layers.getJSONObject("ip");
+				JSONObject tcp = layers.getJSONObject("tcp");
+				JSONObject targetPkt = jsonDataArray.getJSONObject(i+1);
+				
+				if (FlagDetection(packet).equals("NULL") && TCPDetection(targetPkt)) {
+					JSONObject targetLayers = getPacketLayers(targetPkt);
+					JSONObject targetIp = targetLayers.getJSONObject("ip");
+					
+					// 첫 패킷과 두번째 패킷이 동일한 ip.src 와 ip.dst를 갖고 있는지 확인하기
+					String ipSrc = ip.getString("ip.src");
+			    	String ipDst = ip.getString("ip.dst");
+			    	String targetIpSrc = targetIp.getString("ip.src");
+			    	String targetIpDst = targetIp.getString("ip.dst");
+			    	
+			    	if (ipSrc.equals(targetIpSrc) && ipDst.equals(targetIpDst)) {
+			    		if (FlagDetection(targetPkt).equals("NULL")) {
+			    			String closedPort = tcp.getString("tcp.dstport");
+			    			System.out.println("Closed: " + ipDst + ":" + closedPort);
+			    		}
+			    	} 
+					
+				}
+			}
+		}
+		
+		System.out.println("------- Null Scan Completed! --------");
 	}
 	
 	
