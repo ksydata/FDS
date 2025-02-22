@@ -24,6 +24,8 @@ public class AnomalyDetectionFactory {
 			 return new SYNFloodDetection();
 		 } else if (detectionType.equalsIgnoreCase("QUIC")) {
 			 return new QUICDetection();
+		 } else if (detectionType.equalsIgnoreCase("HALF_OPEN_SCAN")) {
+			 return new PortScanDetection();
 		 } else {
 			System.out.println("No proper detection type!");
 		 }
