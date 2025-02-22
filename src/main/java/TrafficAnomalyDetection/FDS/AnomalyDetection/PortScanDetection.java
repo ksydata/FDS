@@ -1,12 +1,23 @@
 package TrafficAnomalyDetection.FDS.AnomalyDetection;
 
+import java.util.Scanner;
+
 import org.json.JSONArray;
 import org.json.JSONObject;
 
 public class PortScanDetection extends AnomalyDetection {
 	@Override
 	public void executeDetection(JSONArray jsonDataArray) {
-		halpOpenScanDetection(jsonDataArray);
+		Scanner scanner = new Scanner(System.in);
+		System.out.print("Enter Port Scan Type: ");
+		String scanType = scanner.nextLine();
+		if (scanType.equalsIgnoreCase("HALF_OPEN_SCAN")) {
+			halpOpenScanDetection(jsonDataArray);
+		} else if (scanType.equalsIgnoreCase("FIN_SCAN")) {
+			FINScanDetection(jsonDataArray);
+		}
+		
+		scanner.close();		
 	}
 	
 	public boolean TCPDetection(JSONObject packet) {
@@ -53,6 +64,10 @@ public class PortScanDetection extends AnomalyDetection {
     	else if (tcp.get("tcp.flags").equals("0x0014")) {
     		return "RST-ACK";
     	} 
+    	// 패킷 플래그가 [FIN] 인 경우
+    	else if (tcp.get("tcp.flags").equals("0x0001")) {
+    		return "FIN";
+    	}
     	// 그 외
     	else {
     		return "ETC";
@@ -76,7 +91,6 @@ public class PortScanDetection extends AnomalyDetection {
 				if (FlagDetection(packet).equals("SYN") && TCPDetection(targetPkt)) {
 					JSONObject targetLayers = getPacketLayers(targetPkt);
 					JSONObject targetIp = targetLayers.getJSONObject("ip");
-			    	JSONObject targetTcp = targetLayers.getJSONObject("tcp");
 			    	
 			    	// 첫 패킷이 {"ip.src": "10.111.222.333", "ip.dst": "33.222.444.555"} 일 때
 			    	// 두번째 패킷이 {"ip.src": "33.222.444.555", "ip.dst": "10.111.222.333"} 인 구성인지 확인하기
@@ -85,27 +99,62 @@ public class PortScanDetection extends AnomalyDetection {
 			    	String targetIpSrc = targetIp.getString("ip.src");
 			    	String targetIpDst = targetIp.getString("ip.dst");
 			    	
+			    	
+			    	
 			    	if (ipSrc.equals(targetIpDst) && ipDst.equals(targetIpSrc)) {
 			    		// 열린 포트: [SYN] - [SYN, ACK] 순으로 전개되는지 확인
 			    		// [SYN] - [SYN, ACK] 순으로 패킷 전개 시 대상 서버의 해당 포트가 열려있음
-						if (targetTcp.get("tcp.flags").equals("0x0012")) {
+						if (FlagDetection(targetPkt).equals("SYN-ACK")){
 							String openPort = tcp.getString("tcp.dstport");
 							System.out.println("Open: " + ipDst + ":" + openPort);
 						}
 						// 닫힌 포트: [SYN] - [RST, ACK] 순으로 전개되는지 확인
 						// [SYN] - [RST, ACK] 순으로 패킷 전개 시 대상 서버의 해당 포트가 닫혀있음
-						if (targetTcp.get("tcp.flags").equals("0x0014")) {
+						if (FlagDetection(targetPkt).equals("RST-ACK")) {
 							String closedPort = tcp.getString("tcp.dstport");
-							System.out.println("Closed: " + ipDst + ":" + closedPort);
+//							System.out.println("Closed: " + ipDst + ":" + closedPort);
 						}
-			    	}
-			    	
-			    	
-				}
+			    	} 
+				} 
 				
 			}
 		}
 		
+	}
+	
+	public void FINScanDetection(JSONArray jsonDataArray) {
+		// [FIN] 패킷 전달 후 응답이 없는 경우를 판별
+		for (int i = 0; i < jsonDataArray.length(); i++) {
+			JSONObject packet = jsonDataArray.getJSONObject(i);
+			
+			if (TCPDetection(packet) && (i+1 < jsonDataArray.length())) {
+				JSONObject layers = getPacketLayers(packet);
+				JSONObject ip = layers.getJSONObject("ip");
+				JSONObject tcp = layers.getJSONObject("tcp");
+				JSONObject targetPkt = jsonDataArray.getJSONObject(i+1);
+				
+				
+				if (FlagDetection(packet).equals("FIN") && TCPDetection(targetPkt)) {
+					JSONObject targetLayers = getPacketLayers(targetPkt);
+					JSONObject targetIp = targetLayers.getJSONObject("ip");
+					
+					// 첫 패킷이 {"ip.src": "10.111.222.333", "ip.dst": "33.222.444.555"} 일 때
+			    	// 두번째 패킷이 {"ip.src": "33.222.444.555", "ip.dst": "10.111.222.333"} 인 구성인지 확인하기
+			    	String ipSrc = ip.getString("ip.src");
+			    	String ipDst = ip.getString("ip.dst");
+			    	String targetIpSrc = targetIp.getString("ip.src");
+			    	String targetIpDst = targetIp.getString("ip.dst");
+			    	
+			    	if (ipSrc.equals(targetIpSrc) && ipDst.equals(targetIpDst)) {
+			    		if (FlagDetection(targetPkt).equals("FIN")) {
+			    			String closedPort = tcp.getString("tcp.dstport");
+			    			System.out.println("Closed: " + ipDst + ":" + closedPort);
+			    		}
+			    	} 
+				}
+			}
+				
+		}
 	}
 	
 	
