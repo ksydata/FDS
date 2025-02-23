@@ -11,9 +11,9 @@ import org.json.JSONArray;
 public class MainFDS {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
-        System.out.print("Enter mongoDB collection name: ");
+        System.out.print("Enter mongoDB collection name: "); // TWOHOSTS_PACKET
         String collectionName = scanner.nextLine();
-        System.out.print("Enter anomaly detection type: ");
+        System.out.print("Enter anomaly detection type: "); // PORT_SCAN
         String detectionType = scanner.nextLine();
         
         // 연결상수 enum에서 DB 연결정보 가져오기
