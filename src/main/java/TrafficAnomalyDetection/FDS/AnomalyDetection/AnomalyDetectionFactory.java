@@ -20,8 +20,10 @@ public class AnomalyDetectionFactory {
 			return new XSSDetection();
 		 } else if (detectionType.equalsIgnoreCase("Dridex")) {
 			 return new DridexDetection();
-		 } else if (detectionType.equalsIgnoreCase("SYNFlood")) {
+		 } else if (detectionType.equalsIgnoreCase("SYN_FLOOD")) {
 			 return new SYNFloodDetection();
+		 } else if (detectionType.equalsIgnoreCase("UDP_FLOOD")) {
+			 return new UDPFloodDetection();
 		 } else if (detectionType.equalsIgnoreCase("QUIC")) {
 			 return new QUICDetection();
 		 } else if (detectionType.equalsIgnoreCase("PORT_SCAN")) {
