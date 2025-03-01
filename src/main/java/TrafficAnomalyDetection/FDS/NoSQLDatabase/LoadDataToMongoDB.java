@@ -1,12 +1,16 @@
 // MongoDB와 상호작용하는 기능을 담당하는 클래스 LoadDataToMongoDB.java
 package TrafficAnomalyDetection.FDS.NoSQLDatabase;
 
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 // import com.mongodb.*;
 import com.mongodb.client.MongoClient;
 import com.mongodb.client.MongoClients;
 import com.mongodb.client.MongoDatabase;
+import com.mongodb.client.model.InsertManyOptions;
 import com.mongodb.client.MongoCollection;
 import com.mongodb.client.MongoCursor;
 
@@ -18,9 +22,9 @@ import org.json.JSONObject;
 
 import java.nio.file.Files;
 import java.nio.file.Paths;
-
+import java.util.ArrayList;
 import java.util.List;
-
+import java.io.File;
 import java.io.IOException;
 
 
@@ -43,27 +47,39 @@ public class LoadDataToMongoDB {
 		// DB 서버에 접속
         MongoCollection<Document> collection = database.getCollection(collectionName);
         
-        // 경로 내 파일에서 json 데이터 로드(json 대신 csv 파일을 사용 가능)
-		String jsonData = new String( Files.readAllBytes( Paths.get(filePath) ) );
-		
+        // 경로 내 파일에서 json 데이터 로드(json 대신 csv 파일을 사용 가능) : Files.readAllBytes 대신 JsonParser 활용
+//		String jsonData = new String( Files.readAllBytes( Paths.get(filePath) ) );
+        JsonFactory factory = new JsonFactory();
+        JsonParser parser = factory.createParser(new File(filePath));
+        
+        
 		// Jackson ObjectMapper 불러오기
 		ObjectMapper mapper = new ObjectMapper();
-
-		// JSON 데이터를 List<MapSource>로 매핑
-        List<MapSource> SourceList = mapper.readValue(jsonData, new TypeReference<List<MapSource>>() {});
-
-        // 결과 출력
-        for (MapSource source : SourceList) {
-        	// test.getSource()를 MongoDB에 삽입할 Document로 변환
-            Document doc = new Document("data", source.getSource());  // Source 값을 "data" 필드로 삽입
-
-            // MongoDB에 삽입
-            collection.insertOne(doc);
-
-            // 결과 출력 (JSON 형태로 보기)
-            System.out.println(mapper.writerWithDefaultPrettyPrinter()
-                    .writeValueAsString(doc));
+		
+		// BATCH 로 모아서 데이터 입력할 수 있도록 준비
+		List<Document> documents = new ArrayList<>();
+		final int BATCH_SIZE = 100; // 배치 크기 (조절 가능)
+		
+		// JSON이 배열인지 확인
+        if (parser.nextToken() != JsonToken.START_ARRAY) {
+            throw new IOException("JSON 파일이 배열([])로 시작하지 않음.");
         }
+
+        // BATCH로 MongoDB에 데이터 입력 진행
+		 while (parser.nextToken() != JsonToken.END_ARRAY) {
+            MapSource source = mapper.readValue(parser, MapSource.class);
+            Document doc = new Document("data", source.getSource());
+            documents.add(doc);
+
+            // 배치 크기 도달 시 insertMany 수행
+            if (documents.size() >= BATCH_SIZE) {
+//            	System.out.println(documents);
+                collection.insertMany(documents, new InsertManyOptions().ordered(false));
+                documents.clear(); // 리스트 초기화
+                System.gc(); // 메모리 해제
+            }
+        }
+        
 		
 	}
 	
