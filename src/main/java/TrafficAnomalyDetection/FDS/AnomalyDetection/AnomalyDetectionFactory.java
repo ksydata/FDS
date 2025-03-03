@@ -11,8 +11,8 @@ public class AnomalyDetectionFactory {
 		// 실행 클래스에서 scanner를 통해 입력받은 detectionType에 따른 구체 클래스 반환
 		if (detectionType.equalsIgnoreCase("PORT_SCAN")) {
 			return new AnalysisPacket();
-		} else if (detectionType.equalsIgnoreCase("DDoS")) {
-			return new DDoSDetection();
+		} else if (detectionType.equalsIgnoreCase("SYN_FLOODING")) {
+			return new SynFloodingDetection();
 		} else {
 			System.out.println("No proper detection type!");
 		}

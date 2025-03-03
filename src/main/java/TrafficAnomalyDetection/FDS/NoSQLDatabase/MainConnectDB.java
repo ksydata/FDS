@@ -4,6 +4,8 @@ package TrafficAnomalyDetection.FDS.NoSQLDatabase;
 import java.io.IOException;
 import java.util.Scanner;
 
+// C:/Eclipse/dataArchive/DDoS/BlindSQLInjection_Havij.json
+
 public class MainConnectDB {
 	public static void main(String[] args) {
 		// Scanner()를 통해 외부에서 파일경로와 컬렉션이름 입력받기
@@ -34,3 +36,6 @@ public class MainConnectDB {
 		scanner.close();
 	}
 }
+
+// Run Configuration > Argument > -Xmx4g
+// An unexpected error occurred: Payload document size is larger than maximum of 16777216.

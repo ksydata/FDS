@@ -1,6 +1,6 @@
 package TrafficAnomalyDetection.FDS.PCAPAnalysis;
-// C:\Eclipse\dataArchive\network_packet_analysis\DDoS\3. 대역폭 공격\1.dns_tcp_truncate.pcap
-// C:\Eclipse\dataArchive\network_packet_analysis\DDoS\대역폭 공격\1.dns_tcp_truncate.json
+// C:/Eclipse/dataArchive/network_packet_analysis/DDoS/1.syn_ack_flooding.pcap
+// C:/Eclipse/dataArchive/network_packet_analysis/DDoS/1.syn_ack_flooding.json
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.pcap4j.core.PcapHandle;
@@ -8,6 +8,7 @@ import org.pcap4j.core.Pcaps;
 import org.pcap4j.packet.Packet;
 import org.pcap4j.packet.namednumber.EtherType;
 import org.pcap4j.packet.namednumber.IpNumber;
+import org.pcap4j.packet.TcpPacket;
 
 import java.io.File;
 import java.util.*;
@@ -16,17 +17,17 @@ public class MainPCAP {
 
     public static void main(String[] args) {
         try (Scanner scanner = new Scanner(System.in)) {
-			// 사용자로부터 입력 파일 경로 받기
-			System.out.print("변환할 PCAP 파일 경로를 입력하세요: ");
-			String pcapFile = scanner.nextLine();
+            // 사용자로부터 입력 파일 경로 받기
+            System.out.print("변환할 PCAP 파일 경로를 입력하세요: ");
+            String pcapFile = scanner.nextLine();
 
-			// 사용자로부터 출력 파일 경로 받기
-			System.out.print("출력할 JSON 파일 경로를 입력하세요: ");
-			String outputJson = scanner.nextLine();
+            // 사용자로부터 출력 파일 경로 받기
+            System.out.print("출력할 JSON 파일 경로를 입력하세요: ");
+            String outputJson = scanner.nextLine();
 
-			// 변환 작업 시작
-			convertPcapToJson(pcapFile, outputJson);
-		}
+            // 변환 작업 시작
+            convertPcapToJson(pcapFile, outputJson);
+        }
     }
 
     public static void convertPcapToJson(String pcapFile, String outputJson) {
@@ -87,8 +88,8 @@ public class MainPCAP {
         }
 
         // TCP/UDP 헤더
-        if (packet.contains(org.pcap4j.packet.TcpPacket.class)) {
-            org.pcap4j.packet.TcpPacket tcpPacket = packet.get(org.pcap4j.packet.TcpPacket.class);
+        if (packet.contains(TcpPacket.class)) {
+            TcpPacket tcpPacket = packet.get(TcpPacket.class);
             headerMap.put("TCP", extractTcpInfo(tcpPacket));
         } else if (packet.contains(org.pcap4j.packet.UdpPacket.class)) {
             org.pcap4j.packet.UdpPacket udpPacket = packet.get(org.pcap4j.packet.UdpPacket.class);
@@ -124,13 +125,27 @@ public class MainPCAP {
         return ipv6Map;
     }
 
-    public static Map<String, Object> extractTcpInfo(org.pcap4j.packet.TcpPacket tcpPacket) {
+    public static Map<String, Object> extractTcpInfo(TcpPacket tcpPacket) {
         Map<String, Object> tcpMap = new HashMap<>();
-        tcpMap.put("src_port", tcpPacket.getHeader().getSrcPort().valueAsInt());
-        tcpMap.put("dst_port", tcpPacket.getHeader().getDstPort().valueAsInt());
-        tcpMap.put("seq_number", tcpPacket.getHeader().getSequenceNumber());
-        tcpMap.put("ack_number", tcpPacket.getHeader().getAcknowledgmentNumber());
-        tcpMap.put("flags", tcpPacket.getHeader().getFlags());
+        TcpPacket.TcpHeader tcpHeader = tcpPacket.getHeader();
+
+        tcpMap.put("src_port", tcpHeader.getSrcPort().valueAsInt());
+        tcpMap.put("dst_port", tcpHeader.getDstPort().valueAsInt());
+        tcpMap.put("seq_number", tcpHeader.getSequenceNumber());
+        tcpMap.put("ack_number", tcpHeader.getAcknowledgmentNumber());
+
+        // TCP 플래그 추출 (수정된 부분)
+        byte[] rawData = tcpPacket.getRawData();
+        byte flagByte = rawData[13]; // TCP 플래그는 14번째 바이트(0부터 시작)
+
+        // 플래그 확인
+        tcpMap.put("flags_ack", (flagByte & 0x10) != 0 ? "ACK" : "NONE");
+        tcpMap.put("flags_fin", (flagByte & 0x01) != 0 ? "FIN" : "NONE");
+        tcpMap.put("flags_rst", (flagByte & 0x04) != 0 ? "RST" : "NONE");
+        tcpMap.put("flags_psh", (flagByte & 0x08) != 0 ? "PSH" : "NONE");
+        tcpMap.put("flags_syn", (flagByte & 0x02) != 0 ? "SYN" : "NONE");
+        tcpMap.put("flags_urg", (flagByte & 0x20) != 0 ? "URG" : "NONE");
+
         return tcpMap;
     }
 

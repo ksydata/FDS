@@ -6,6 +6,20 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 
+/* TRF_CS_DB(document)
+ * BlindSQLInjection_PACKET 
+ * Descrypte_PACKET 
+ * ErroredBasedSQL_PACKET
+ * MalwareWebsite_PACKET
+ * SYNFlooding_PACKET
+ * StoredXSS_PACKET
+ * TCPConnectionFlooding_PACKET
+ * TCPRestranstission_PACKET
+ * Twohosts_PACKET
+ * XORDDoS_SYNFLOODING_PACKET
+ * XSS_PACKET
+ */
+
 //Json에서 {id: [1, 2]} 형태의 데이터를 정의하고 표현하기 위한 클래스
 @JsonIgnoreProperties(ignoreUnknown = true)
 public class MapSource {
