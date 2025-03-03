@@ -16,12 +16,12 @@ import org.json.JSONObject;
 public class SynFloodingDetection extends AnomalyDetection {
 	
 	// SYN 플래그 16진수
-	private static final String SYN_FLAG = "0x02";
-	private static final String ACK_FLAG = "0x10";
+	private static final String SYN_FLAG = "0x0002"; // "0x02"
+	private static final String ACK_FLAG = "0x0010"; // "0x10"
 		// private static final int FIN_FLAG = 0x01;
 		// private static final int NULL_FLAG = 0x00;
 	// 특정 시간 동안의 SYN 요청 패킷 수의 임계치 설정
-	private static final int SYN_THRESHOLD = 100;
+	private static final int SYN_THRESHOLD = 10;
 	// 특정 시간의 범위 설정
 	private static final int TIME_WINDOW_MS = 10000; // 10,000ms = 10초, 이거 어디에서 써야될까 구현 못함
 	
@@ -43,6 +43,8 @@ public class SynFloodingDetection extends AnomalyDetection {
 			// IP 주소, 플래그 추출하는 메서드 적용
 			String[] ipInfo = extractIP(jsonDataObject);
 			
+			System.out.println(ipInfo[0] + ipInfo[1] + ipInfo[2]);
+
 			if (ipInfo != null) {
 				String sourceIP = ipInfo[1];
 				String destinationIP = ipInfo[2];
@@ -62,27 +64,40 @@ public class SynFloodingDetection extends AnomalyDetection {
 	}
 			
 	// 데이터에서 IP 패킷 찾아서 출발지 IP, 도착지 IP 추출
-    private String[] extractIP(JSONObject packet) {
-        if (packet.has("data")) {
-            JSONObject source = packet.getJSONObject("data");
-            JSONObject layers = source.getJSONObject("layers");
-            // IP 패킷 여부 확인
-            if (layers.has("ip")) {
-                JSONObject ipLayer = layers.getJSONObject("ip");
+	// https://blog.naver.com/shj1126zzang/90193887664
+	private String[] extractIP(JSONObject packet) {
+	    // 변수들을 상단에서 선언
+	    String sourceIP = null;
+	    String destinationIP = null;
+	    String flagsIP = null;
+	    
+	    if (packet.has("data")) {
+	        JSONObject source = packet.getJSONObject("data");
+	        JSONObject layers = source.getJSONObject("layers");
+
+	        // IP 패킷 여부 확인
+	        if (layers.has("ip")) {
+	            JSONObject ipLayer = layers.getJSONObject("ip");
+	            sourceIP = ipLayer.optString("ip.src", null);
                 // String sourceIP = ipLayer.getString("src");
-                String sourceIP = ipLayer.optString("ip.src", null);
-                // String destinationIP = ipLayer.getString("dst");
-                String destinationIP = ipLayer.optString("ip.dst", null);
+	            destinationIP = ipLayer.optString("ip.dst", null);
+                // String destinationIP = ipLayer.getString("dst");	            
+	        }
+
+	        // TCP 패킷 여부 확인
+	        if (layers.has("tcp")) {
+	            JSONObject tcpLayer = layers.getJSONObject("tcp");
+	            flagsIP = tcpLayer.optString("tcp.flags", null);
                 // int flagsIP = ipLayer.getInt("flags");
-                String flagsIP = ipLayer.optString("flags", null);
-                
-                return new String[]{
-                		sourceIP, destinationIP, flagsIP};
-            }
-		}
-		return null;
-    }
-	
+	        }
+	    }
+	    
+	    if (sourceIP != null || destinationIP != null || flagsIP != null) {
+	        return new String[]{sourceIP, destinationIP, flagsIP};
+	    }
+	    return null;
+	}
+
 	// SYN/ACK 플래그를 확인하고, 카운트를 증가시키는 메서드
 	private void countFlags(String flagsIP, String sourceIP, String destinationIP) {
 		// IP별로 SYN 패킷의 수를 집계
