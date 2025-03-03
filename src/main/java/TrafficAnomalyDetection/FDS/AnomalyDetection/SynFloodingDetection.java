@@ -16,20 +16,20 @@ import org.json.JSONObject;
 public class SynFloodingDetection extends AnomalyDetection {
 	
 	// SYN 플래그 16진수
-	private static final int SYN_FLAG = 0x02;
-	private static final int ACK_FLAG = 0x10;
+	private static final String SYN_FLAG = "0x02";
+	private static final String ACK_FLAG = "0x10";
 		// private static final int FIN_FLAG = 0x01;
 		// private static final int NULL_FLAG = 0x00;
 	// 특정 시간 동안의 SYN 요청 패킷 수의 임계치 설정
 	private static final int SYN_THRESHOLD = 100;
 	// 특정 시간의 범위 설정
-	private static final int TIME_WINDOW_MS = 10000; // 10,000ms = 10초
+	private static final int TIME_WINDOW_MS = 10000; // 10,000ms = 10초, 이거 어디에서 써야될까 구현 못함
 	
 	// SYN, ACK 패킷의 양 분석하기 위한 변수 정의(IP별 SYN 패킷 비율 및 ACK 응답 비율 계산)
 	int synCount = 0;
 	int ackCount = 0;
 	// IP별로 SYN 및 ACK 패킷의 수를 집계하는 해시맵 정의(IP 주소를 키로 하고 SYN/ACK 패킷 수를 값으로 저장)
-	Map<String, Integer> synPacketCount = new HashMap<>();
+	Map<String, Integer> synPacketCount = new HashMap<>(); // HASHMAP == DATAFRAME(HASETABLE)
 	Map<String, Integer> ackPacketCount = new HashMap<>();
 	
 	
@@ -46,7 +46,8 @@ public class SynFloodingDetection extends AnomalyDetection {
 			if (ipInfo != null) {
 				String sourceIP = ipInfo[1];
 				String destinationIP = ipInfo[2];
-				int flagsIP = Integer.parseInt(ipInfo[0]);
+				String flagsIP = ipInfo[0];
+				// int flagsIP = Integer.parseInt(ipInfo[0]);
 				
 				// 추출된 IP 관련 데이터를 집계 메서드에 적용
 				countFlags(flagsIP, sourceIP, destinationIP);
@@ -69,23 +70,24 @@ public class SynFloodingDetection extends AnomalyDetection {
             if (layers.has("ip")) {
                 JSONObject ipLayer = layers.getJSONObject("ip");
                 // String sourceIP = ipLayer.getString("src");
-                String sourceIP = ipLayer.optString("src", null);
+                String sourceIP = ipLayer.optString("ip.src", null);
                 // String destinationIP = ipLayer.getString("dst");
-                String destinationIP = ipLayer.optString("dst", null);
+                String destinationIP = ipLayer.optString("ip.dst", null);
                 // int flagsIP = ipLayer.getInt("flags");
-                int flagsIP = ipLayer.optInt("flags", 0);
-               
+                String flagsIP = ipLayer.optString("flags", null);
+                
                 return new String[]{
-                		sourceIP, destinationIP, String.valueOf(flagsIP)};
+                		sourceIP, destinationIP, flagsIP};
             }
 		}
 		return null;
     }
 	
 	// SYN/ACK 플래그를 확인하고, 카운트를 증가시키는 메서드
-	private void countFlags(int flagsIP, String sourceIP, String destinationIP) {
+	private void countFlags(String flagsIP, String sourceIP, String destinationIP) {
 		// IP별로 SYN 패킷의 수를 집계
-		if ((flagsIP & SYN_FLAG) == SYN_FLAG) {
+		if (SYN_FLAG.equals(flagsIP)) { 
+		// ((flagsIP & SYN_FLAG) == SYN_FLAG) 
 			synCount++;
 			synPacketCount.put(
 					sourceIP, 
@@ -93,7 +95,7 @@ public class SynFloodingDetection extends AnomalyDetection {
 		}
 		
 		// IP별로 ACK 패킷의 수를 집계
-		if ((flagsIP & ACK_FLAG) == ACK_FLAG) {
+		if (ACK_FLAG.equals(flagsIP)) {
 			ackCount++;
 			ackPacketCount.put(
 					destinationIP, 
