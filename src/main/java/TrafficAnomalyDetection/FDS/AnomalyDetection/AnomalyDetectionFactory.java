@@ -28,6 +28,8 @@ public class AnomalyDetectionFactory {
 			 return new QUICDetection();
 		 } else if (detectionType.equalsIgnoreCase("PORT_SCAN")) {
 			 return new PortScanDetection();
+		 } else if (detectionType.equalsIgnoreCase("SQL_INJECTION")) {
+			 return new SQLInjectionDetection2();
 		 } else {
 			System.out.println("No proper detection type!");
 		 }
