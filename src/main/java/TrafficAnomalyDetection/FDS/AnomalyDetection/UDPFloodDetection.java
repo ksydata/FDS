@@ -41,24 +41,7 @@ public class UDPFloodDetection extends AnomalyDetection {
 			
 		}
 		
-				
-		// UDP 패킷이 연속되어 진행되는 지 확인되면 카운트 올리기
-		
-		
 		
 	}
-	
-	
-//	public boolean UDPDetection(JSONObject packet) {
-//		// 패킷이 UDP 프로토콜인지 구별
-//    	JSONObject layers = getPacketLayers(packet);
-//    	JSONObject frame = layers.getJSONObject("frame");
-//    	
-//    	if (frame.get("frame.protocols").equals("eth:ethertype:ip:udp:data")) {
-//    		return true;
-//    	} else {
-//    		return false;
-//    	}
-//	}
 	
 }

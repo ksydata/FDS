@@ -14,7 +14,7 @@ public class AnomalyDetectionFactory {
 			return new AnalysisPacket();
 		} else if (detectionType.equalsIgnoreCase("DDoS")) {
 			return new DDoSDetection();
-		} else if (detectionType.equalsIgnoreCase("SQLDetection")) {
+		} else if (detectionType.equalsIgnoreCase("SQL_INJECTION")) {
 			return new SQLInjectionDetection();
 		 } else if (detectionType.equalsIgnoreCase("XSSInjection")) {
 			return new XSSDetection();
@@ -28,8 +28,6 @@ public class AnomalyDetectionFactory {
 			 return new QUICDetection();
 		 } else if (detectionType.equalsIgnoreCase("PORT_SCAN")) {
 			 return new PortScanDetection();
-		 } else if (detectionType.equalsIgnoreCase("SQL_INJECTION")) {
-			 return new SQLInjectionDetection2();
 		 } else {
 			System.out.println("No proper detection type!");
 		 }
