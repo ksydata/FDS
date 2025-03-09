@@ -42,8 +42,7 @@ public class SynFloodingDetection extends AnomalyDetection {
 			JSONObject jsonDataObject = jsonDataArray.getJSONObject(i);
 			// IP 주소, 플래그 추출하는 메서드 적용
 			String[] ipInfo = extractIP(jsonDataObject);
-			
-			System.out.println(ipInfo[0] + ipInfo[1] + ipInfo[2]);
+			// System.out.println(ipInfo[0] + ipInfo[1] + ipInfo[2]);
 
 			if (ipInfo != null) {
 				String sourceIP = ipInfo[1];
@@ -55,6 +54,11 @@ public class SynFloodingDetection extends AnomalyDetection {
 				countFlags(flagsIP, sourceIP, destinationIP);
 				// 클래스 변수에 저장된 데이터를 활용하여 SYN 플러딩 공격 탐지 메서드 적용
 				detectSYNFlooding();
+				
+				System.out.println(synCount);
+				System.out.println(ackCount);
+				System.out.println(synPacketCount);
+				System.out.println(ackPacketCount);
 			}
 		}
 
@@ -87,7 +91,7 @@ public class SynFloodingDetection extends AnomalyDetection {
 	        // TCP 패킷 여부 확인
 	        if (layers.has("tcp")) {
 	            JSONObject tcpLayer = layers.getJSONObject("tcp");
-	            flagsIP = tcpLayer.optString("tcp.flags", null);
+	            flagsIP = tcpLayer.optString("tcp.flags", "0");
                 // int flagsIP = ipLayer.getInt("flags");
 	        }
 	    }

@@ -4,8 +4,7 @@ package TrafficAnomalyDetection.FDS.AnomalyDetection;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
-
-public class DridexDetection extends AnomalyDetection {
+public class WebHackingDetection extends AnomalyDetection {
 	@Override
 	public void executeDetection(JSONArray jsonDataArray) {
 		
@@ -20,7 +19,7 @@ public class DridexDetection extends AnomalyDetection {
 	    	boolean isHttpRequest = layers.has("http") && layers.getJSONObject("http").has("request.method");
 //	    	boolean isTlsHandshake = layers.has("tls") && layers.getJSONObject("tls").has("tls.record");
 //	    	boolean isTlsHandshake = layers.has("tls") && layers.getJSONArray("tls").getJSONArray("tls.record");
-                   
+            // http.request.full_uri || http.response.code == 200       
 //	    	boolean isSsdp = layers.has("ssdp");
 //	    	
 //	    	if ((isHttpRequest || isTlsHandshake) && !isSsdp) {
@@ -44,10 +43,37 @@ public class DridexDetection extends AnomalyDetection {
 	    	
 		}
 		
-		
-    	
-    	
-		
-		
+/*
+		private String[] extractIP(JSONObject packet) {
+		    // 변수들을 상단에서 선언
+		    String sourceIP = null;
+		    String destinationIP = null;
+		    String flagsIP = null;
+		    
+		    if (packet.has("data")) {
+		        JSONObject source = packet.getJSONObject("data");
+		        JSONObject layers = source.getJSONObject("layers");
+
+		        if (layers.has("http")) {
+		            JSONObject ipLayer = layers.getJSONObject("ip");
+		            sourceIP = ipLayer.optString("ip.src", null);
+	                // String sourceIP = ipLayer.getString("src");
+		            destinationIP = ipLayer.optString("ip.dst", null);
+	                // String destinationIP = ipLayer.getString("dst");	            
+		        }
+
+		        if (layers.has("tcp")) {
+		            JSONObject tcpLayer = layers.getJSONObject("tcp");
+		            flagsIP = tcpLayer.optString("tcp.flags", "0");
+	                // int flagsIP = ipLayer.getInt("flags");
+		        }
+		    }
+		    
+		    if (sourceIP != null || destinationIP != null || flagsIP != null) {
+		        return new String[]{sourceIP, destinationIP, flagsIP};
+		    }
+		    return null;
+		}
+*/		
 	}
 }
