@@ -16,7 +16,7 @@ public class AnomalyDetectionFactory {
 			return new DDoSDetection();
 		} else if (detectionType.equalsIgnoreCase("SQL_INJECTION")) {
 			return new SQLInjectionDetection();
-		 } else if (detectionType.equalsIgnoreCase("XSSInjection")) {
+		 } else if (detectionType.equalsIgnoreCase("XSS")) {
 			return new XSSDetection();
 		 } else if (detectionType.equalsIgnoreCase("Dridex")) {
 			 return new DridexDetection();

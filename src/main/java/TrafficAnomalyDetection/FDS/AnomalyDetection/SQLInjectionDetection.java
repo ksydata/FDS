@@ -44,9 +44,8 @@ public class SQLInjectionDetection extends AnomalyDetection {
 			
 	    	if (layers.has("http")) {
 	    		JSONObject httpData = layers.getJSONObject("http");
-	    		
 	    		String targetKey = "http.request.uri";
-	            String result = findValueByKey(httpData, targetKey);
+	            String result = DetectionTools.findValueByKey(httpData, targetKey);
 	            
 	            
 	            // 결과 출력
@@ -75,24 +74,4 @@ public class SQLInjectionDetection extends AnomalyDetection {
 		    	
 	   }
 	}
-
-	private static String findValueByKey(JSONObject jsonObject, String targetKey) {
-        Iterator<String> keys = jsonObject.keys();
-        while (keys.hasNext()) {
-            String key = keys.next();
-            Object value = jsonObject.get(key);
-
-            // 원하는 키를 찾으면 반환
-            if (key.equals(targetKey)) {
-                return value.toString();
-            }
-
-            // JSON 객체인 경우 재귀 호출
-            if (value instanceof JSONObject) {
-                String result = findValueByKey((JSONObject) value, targetKey);
-                if (result != null) return result;
-            }
-        }
-        return null;
-    }
 }
