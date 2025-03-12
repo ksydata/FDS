@@ -15,7 +15,8 @@ class PostRequestHandler extends RequestHandler {
 	@Override
 	public void sendRequest(String parameter) throws Exception {
 		// HTTP url 연결 변수 생성
-		HttpURLConnection connection = (HttpURLConnection) new URL(url).openConnection(); // HTTP 연결 생성
+		HttpURLConnection connection = (HttpURLConnection) new URL(url)
+				.openConnection();
 		// POST 요청 방식을 설정
 		connection.setRequestMethod("POST");
 			// •GET •POST •HEAD •OPTIONS •PUT •DELETE •TRACE 

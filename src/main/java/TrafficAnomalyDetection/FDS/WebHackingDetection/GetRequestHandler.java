@@ -15,12 +15,12 @@ class GetRequestHandler extends RequestHandler {
 	@Override
 	public void sendRequest(String parameter) throws Exception {
 		// GET 방식의 url 쿼리 스트림 변수 생성
-		String target = url + "?" + parameter;
-			// String target = url + "?memberID=" + memberID + "&memberPassword=" + memberPW;		
 		// HTTP url 연결 변수 생성
-		HttpURLConnection connection = (HttpURLConnection) new URL(target)
+		HttpURLConnection connection = (HttpURLConnection) new URL(url)
 				.openConnection();
-		
+		// URL targetURL = new URL(url);
+		// HttpURLConnection connection = (HttpURLConnection) targetURL.openConnection();
+
 		// 세션 쿠키를 저장하는 변수 생성
 		String cookie = "";
 		// 서버에서 받은 쿠키 값을 가져오는 변수 생성
@@ -30,7 +30,11 @@ class GetRequestHandler extends RequestHandler {
 		// 세션 쿠키를 출력
 		System.out.println("Session is: " + cookie);
 		
-		// 서버로부터 응답 데이터를 읽어오는 BufferedReader 생성
+		// connection = (HttpURLConnection) new URL(url).openconnection;
+		// 세션 쿠키를 설정 및 서버와 연결
+		connection.setRequestProperty("Cookie", cookie);
+		
+		// 서버로부터 응답 데이터를 읽어오는 BufferedReader 생성(html 파일 출력을 위해 utf-8 인코딩)
 		BufferedReader bufferedReader = new BufferedReader(
 				new InputStreamReader(
 						connection.getInputStream(), "UTF-8"));
@@ -38,5 +42,8 @@ class GetRequestHandler extends RequestHandler {
         while ((temp = bufferedReader.readLine()) != null) {
             System.out.println(temp);
         }
+        
+        connection.disconnect();
+        bufferedReader.close();
 	}
 }
