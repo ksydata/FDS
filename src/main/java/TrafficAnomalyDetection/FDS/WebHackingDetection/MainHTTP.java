@@ -57,9 +57,20 @@ public class MainHTTP {
 
 /*
 Enter the domain name: http://www.dowellcomputer.com/hacking/member/memberLoginAction.jsp
-Enter id: test
-Enter password: test
+Enter id: alwayssummer
+Enter password: password
+
 Enter request method (GET/POST): GET
-Session is: JSESSIONID=--; Path=/; HttpOnly
-<server_response>
+Session is: JSESSIONID=CA3C59D94F0B1F3AFB04C4A6023F9CD1; Path=/; HttpOnly
+
+Enter request method (GET/POST): POST
+HTTP Response Code: 200
+HTTP Response Message: OK
+<script>location.href='../main.jsp';</script>
+<script>alert('아이디가 존재하지 않습니다.');location.href='./memberLoginForm.jsp';</script>
+<script>alert('비밀번호가 일치하지 않습니다.');location.href='./memberLoginForm.jsp';</script>
+
+HTTP Response Code: 404
+java.io.FileNotFoundException: URL
+HTTP Response Message: Not Found
 */

@@ -42,7 +42,7 @@ class GetRequestHandler extends RequestHandler {
         while ((temp = bufferedReader.readLine()) != null) {
             System.out.println(temp);
         }
-        
+		// 리소스 해제
         connection.disconnect();
         bufferedReader.close();
 	}

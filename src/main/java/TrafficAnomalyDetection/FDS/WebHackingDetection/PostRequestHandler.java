@@ -39,8 +39,10 @@ class PostRequestHandler extends RequestHandler {
 			os.write(input, 0, input.length);
 		}
 		
-		int httpResponseCode = connection.getResponseCode(); // .message()
+		int httpResponseCode = connection.getResponseCode();
+		String httpResponseMSG = connection.getResponseMessage();
 		System.out.println("HTTP Response Code: " + httpResponseCode);
+		System.out.println("HTTP Response Message: " + httpResponseMSG);
 		
 		// 서버로부터 응답 데이터를 읽어오는 BufferedReader 객체 생성
 		BufferedReader bufferedReader = new BufferedReader(
