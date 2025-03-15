@@ -17,6 +17,7 @@ import java.util.Scanner;
  * WireShark의 Statistics-Conversations
  */
 // https://learn.microsoft.com/ko-kr/dotnet/api/system.web.ui.design.urlbuilder.buildurl?view=netframework-4.8
+// https://blueyikim.tistory.com/2199
 
 public class MainHTTP {
 
@@ -59,6 +60,6 @@ Enter the domain name: http://www.dowellcomputer.com/hacking/member/memberLoginA
 Enter id: test
 Enter password: test
 Enter request method (GET/POST): GET
-Session is: <cookie_value>
+Session is: JSESSIONID=--; Path=/; HttpOnly
 <server_response>
 */
