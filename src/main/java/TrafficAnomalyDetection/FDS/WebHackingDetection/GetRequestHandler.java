@@ -40,7 +40,10 @@ class GetRequestHandler extends RequestHandler {
 						connection.getInputStream(), "UTF-8"));
 		// 서버 응답을 출력
         while ((temp = bufferedReader.readLine()) != null) {
-            System.out.println(temp);
+            // if ( temp.contains("value=\"") && temp.contains("memberPassword") ) {
+        	// 		System.out.println( temp.split("value=\"")[1].split("\">")[0] );
+        	// }
+        	System.out.println(temp);
         }
 		// 리소스 해제
         connection.disconnect();
