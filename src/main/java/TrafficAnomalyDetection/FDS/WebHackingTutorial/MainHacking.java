@@ -1,14 +1,28 @@
 package TrafficAnomalyDetection.FDS.WebHackingTutorial;
 
-import java.io.IOException;
-import java.net.MalformedURLException;
-
 public class MainHacking {
 
-	public static void main(String[] args) throws MalformedURLException, IOException {
-		SessionDetection sd = new SessionDetection();
-		sd.detectSession();
+	public static void main(String[] args) throws Exception {
+//		SessionDetection sd = new SessionDetection();
+//		sd.detectSession();
+		
+		
+//		SessionDVWA sd = new SessionDVWA();
+//		String cookie = sd.getCookie();
+		
+		SQLInjectionTrial sq = new SQLInjectionTrial();
+		sq.SQLInjection();
+		
+		
 
 	}
 
 }
+
+/*
+ * DVWA 접속 정보: ip 192.168.219.102 /DVWA
+ * 
+ * 
+ * 
+ * 
+ */
