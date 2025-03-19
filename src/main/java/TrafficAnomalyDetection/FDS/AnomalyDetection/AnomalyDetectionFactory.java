@@ -13,6 +13,10 @@ public class AnomalyDetectionFactory {
 			return new AnalysisPacket();
 		} else if (detectionType.equalsIgnoreCase("SYN_FLOODING")) {
 			return new SynFloodingDetection();
+		} else if (detectionType.equalsIgnoreCase("SQL_INJECTION")) {
+			return new SQLInjectionDetection();
+		} else if (detectionType.equalsIgnoreCase("XSS")) {
+			return new XSSDetection();
 		} else {
 			System.out.println("No proper detection type!");
 		}

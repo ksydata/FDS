@@ -25,7 +25,7 @@ public class XSSDetection extends AnomalyDetection {
 	    	 if (layers.has("http")) {
 		    		JSONObject httpData = layers.getJSONObject("http");
 		    		String targetKey = "http.request.uri";
-		            String result = DetectionTools.findKeyValue(httpData, targetKey);
+		            String result = (String) DetectionTools.findKeyValue(httpData, targetKey);
 		            
 		            // 결과 출력
 		            if (result != null) {	                
@@ -40,8 +40,6 @@ public class XSSDetection extends AnomalyDetection {
 		            } 
 		            
 		    	}
-	    	 
-	    	
 	     }
 	}
 }

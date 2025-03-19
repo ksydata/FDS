@@ -4,13 +4,15 @@ import java.net.URLEncoder;
 import java.util.Scanner;
 
 /* 
- * 1. 송수신자간 시간별 통신내역(세션, 통신 순서) 분석 
+ * 1. 송수신자간 시간별 통신내역(세션, 통신 순서) 분석
+ * 
  * 2. 전송파일 분석
  * GET 방식
  * SQLInjection, Reflect XSS, LFI, RFI
  * 
  * POST 방식
  * Stored XSS, CSRF, Webshell upload
+ * 
  * 3. 악성코드 분석
  * 
  * Network Miner 툴 활용 -> tls 이걸 주로 분석할 수 있음. but, 이해를 못함
@@ -40,21 +42,57 @@ public class MainHTTP {
             String encodedPW = URLEncoder.encode(memberPW, "UTF-8");
             String url = dns + "?memberID=" + encodedID + "&memberPassword=" + encodedPW;
             
-            // 사용자의 외부 입력으로 HTTP 헤더 요청 방식 받기
-            System.out.print("Enter request method (GET/POST): ");
-            String method = scanner.nextLine();
-            
-            // 팩토리 클래스로 요청 핸들러 객체를 생성
-            RequestHandler requestHandler = RequestHandlerFactory.getRequestHandler(method, url);
-            
-            requestHandler.sendRequest(url);
-            
+            // 모의해킹(공격 시뮬레이션) 수행 여부 확인
+            if (isSimulateAttack(scanner)) {
+                System.out.print("Enter attack Type: ");
+                String attackType = scanner.nextLine();
+                getAttackSimulation(url, attackType, scanner);
+            } else {
+                // 사용자의 외부 입력으로 HTTP 헤더 요청 방식 확인
+                getHttpRequest(url, scanner);
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
+
+	private static boolean isSimulateAttack(Scanner scanner) {
+		System.out.print("Do you want to simulate web hacking attack? (Y/N): ");
+		String simulation = scanner.nextLine();
+		return simulation.equalsIgnoreCase("yes");
+	}
+	
+    private static void getAttackSimulation(String attackType, String url, Scanner scanner) {
+        System.out.print("Enter attack payload: ");
+        String attackPayload = scanner.nextLine();
+        
+        AttackSimulationFactory factory = new AttackSimulationFactory();
+        AttackSimulation attackSimulation = factory.executeSimulation(attackType, url, attackPayload);
+        try {
+			attackSimulation.simulate();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+    
+	private static void getHttpRequest(String url, Scanner scanner) {
+        // 사용자의 외부 입력으로 HTTP 헤더 요청 방식 받기
+		System.out.print("Enter request method (GET/POST): ");
+        String method = scanner.nextLine();
+        
+        // 팩토리 클래스로 요청 핸들러 객체를 생성
+        RequestHandler requestHandler = RequestHandlerFactory.getRequestHandler(method, url);
+        try {
+			requestHandler.sendRequest(url);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
 }
 
+	
 /*
 Enter the domain name: http://www.dowellcomputer.com/hacking/member/memberLoginAction.jsp
 Enter id: alwayssummer
