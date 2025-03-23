@@ -9,9 +9,11 @@ public class MainHacking {
 		
 //		SessionDVWA sd = new SessionDVWA();
 //		String cookie = sd.getCookie();
+//		System.out.println(cookie);
 		
 		SQLInjectionTrial sq = new SQLInjectionTrial();
-		sq.SQLInjection();
+//		sq.SQLInjection();
+		sq.run();
 		
 		
 

@@ -9,7 +9,7 @@ import java.util.Map;
 public class SessionDVWA {
 
 	public String getCookie() throws Exception {
-		String loginUrl = "http://192.168.219.102/DVWA/login.php";
+		String loginUrl = "http://192.168.219.103/DVWA/login.php";
         String credentials = "username=admin&password=password&Login=Login"; // DVWA 기본 계정
         String cookie = loginAndGetSession(loginUrl, credentials);
         
