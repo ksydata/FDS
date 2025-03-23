@@ -43,3 +43,19 @@ public class XSSDetection extends AnomalyDetection {
 	     }
 	}
 }
+
+/*
+🚨 Potential SQL Injection detected: /search.php?searchfor="><script>alert(document.cookie)</script>
+Count: 1
+🚨 Potential SQL Injection detected: /search.php?searchfor="><script>alert('TEST_XSS')</script>
+Count: 2
+🚨 Potential SQL Injection detected: /search.php?searchfor="><script>alert('TEST_XSS')</script>
+Count: 3
+🚨 Potential SQL Injection detected: /search.php?searchfor="><script>alert('TEST_XSS')</script>
+Count: 4
+🚨 Potential SQL Injection detected: /search.php?searchfor="><script>alert('TEST_XSS')</script>
+Count: 5
+🚨 Potential SQL Injection detected: /search.php?searchfor="><script>alert('TEST_XSS')</script>
+Count: 6
+Closing MongoDB connection
+ */

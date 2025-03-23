@@ -21,8 +21,9 @@ import java.util.Scanner;
 // https://learn.microsoft.com/ko-kr/dotnet/api/system.web.ui.design.urlbuilder.buildurl?view=netframework-4.8
 // https://blueyikim.tistory.com/2199
 
-public class MainHTTP {
 
+public class MainHTTP {
+// 1. 로그인 과정 -> 2. 세션 유지(관리) -> 3. 공격 시뮬레이션
 	public static void main(String[] args) throws Exception {
         try (Scanner scanner = new Scanner(System.in)) {
             // 사용자의 외부 입력으로 URL의 기본 호스트 주소(도메인 이름) 및 파라미터 받기
@@ -30,6 +31,8 @@ public class MainHTTP {
         	String dns = scanner.nextLine();
         	// http://www.dowellcomputer.com/hacking/member/memberLoginAction.jsp
         	// http://www.dowellcomputer.com/hacking/member/memberUpdateForm.jsp?ID
+        	// http://192.168.56.101/DVWA/login.php
+        	// http://192.168.56.101/DVWA/vulnerabilities/sqli/?id=&Submit=Submit&user_token=1b390a71714157dd68453245206a6061#
         	
         	System.out.print("Enter id: ");
             String memberID = scanner.nextLine();
@@ -40,7 +43,8 @@ public class MainHTTP {
             // 호스트, 경로, 쿼리 등 파라미터를 결합한 전체 URL
             String encodedID = URLEncoder.encode(memberID, "UTF-8");
             String encodedPW = URLEncoder.encode(memberPW, "UTF-8");
-            String url = dns + "?memberID=" + encodedID + "&memberPassword=" + encodedPW;
+            String url = dns + "?username=" + encodedID + "&password=" + encodedPW;
+            	// "?memberID=" "&memberPassword="
             
             // 모의해킹(공격 시뮬레이션) 수행 여부 확인
             if (isSimulateAttack(scanner)) {
@@ -59,7 +63,7 @@ public class MainHTTP {
 	private static boolean isSimulateAttack(Scanner scanner) {
 		System.out.print("Do you want to simulate web hacking attack? (Y/N): ");
 		String simulation = scanner.nextLine();
-		return simulation.equalsIgnoreCase("yes");
+		return simulation.equalsIgnoreCase("Y");
 	}
 	
     private static void getAttackSimulation(String attackType, String url, Scanner scanner) {
@@ -92,7 +96,70 @@ public class MainHTTP {
 	}
 }
 
-	
+
+/*
+Enter the domain name: http://192.168.56.101/DVWA/login.php
+Enter id: admin
+Enter password: password
+Do you want to simulate web hacking attack? (Y/N): Y
+Enter attack Type: XSS_SQLINJECTION
+Enter attack payload: <script>alert('XSS')</script>
+java.lang.IllegalArgumentException: Invalid attack type http://192.168.56.101/DVWA/login.php?username=admin&password=password
+ */
+
+/*
+Enter the domain name: http://192.168.56.101/DVWA/login.php
+Enter id: admin
+Enter password: password
+Do you want to simulate web hacking attack? (Y/N): N
+Enter request method (GET/POST): GET
+Session is: PHPSESSID=4ot04jgsf1a8dvktujsg8ba0er; expires=Mon, 24 Mar 2025 10:42:41 GMT; Max-Age=86400; path=/; HttpOnly; SameSite=Strict
+
+Enter request method (GET/POST): POST
+HTTP Response Code: 200
+HTTP Response Message: OK
+<!DOCTYPE html>
+<html lang="en-GB">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>Login :: Damn Vulnerable Web Application (DVWA)</title>
+    <link rel="stylesheet" type="text/css" href="dvwa/css/login.css" />
+</head>
+<body>
+    <div id="wrapper">
+        <div id="header">
+            <br />
+            <p><img src="dvwa/images/login_logo.png" alt="DVWA Logo" /></p>
+            <br />
+        </div> <!-- End of header -->
+
+        <div id="content">
+            <form action="login.php" method="post">
+                <fieldset>
+                    <label for="username">Username</label>
+                    <input type="text" class="loginInput" size="20" name="username" id="username" /><br />
+
+                    <label for="password">Password</label>
+                    <input type="password" class="loginInput" size="20" name="password" id="password" autocomplete="off" /><br />
+                    
+                    <br />
+                    <p class="submit">
+                        <input type="submit" value="Login" name="Login" />
+                    </p>
+                </fieldset>
+                <input type="hidden" name="user_token" value="f8271b99fbae4e6bd9d6371d76b920a7" />
+            </form>
+        </div> <!-- End of content -->
+
+        <div id="footer">
+            <p><a href="https://github.com/digininja/DVWA/" target="_blank">Damn Vulnerable Web Application (DVWA)</a></p>
+        </div> <!-- End of footer -->
+    </div> <!-- End of wrapper -->
+</body>
+</html>
+
+ */
+
 /*
 Enter the domain name: http://www.dowellcomputer.com/hacking/member/memberLoginAction.jsp
 Enter id: alwayssummer
