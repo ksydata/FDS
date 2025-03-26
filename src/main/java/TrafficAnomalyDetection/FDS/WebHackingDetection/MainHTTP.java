@@ -113,51 +113,9 @@ Enter id: admin
 Enter password: password
 Do you want to simulate web hacking attack? (Y/N): N
 Enter request method (GET/POST): GET
-Session is: PHPSESSID=4ot04jgsf1a8dvktujsg8ba0er; expires=Mon, 24 Mar 2025 10:42:41 GMT; Max-Age=86400; path=/; HttpOnly; SameSite=Strict
-
-Enter request method (GET/POST): POST
-HTTP Response Code: 200
-HTTP Response Message: OK
-<!DOCTYPE html>
-<html lang="en-GB">
-<head>
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
-    <title>Login :: Damn Vulnerable Web Application (DVWA)</title>
-    <link rel="stylesheet" type="text/css" href="dvwa/css/login.css" />
-</head>
-<body>
-    <div id="wrapper">
-        <div id="header">
-            <br />
-            <p><img src="dvwa/images/login_logo.png" alt="DVWA Logo" /></p>
-            <br />
-        </div> <!-- End of header -->
-
-        <div id="content">
-            <form action="login.php" method="post">
-                <fieldset>
-                    <label for="username">Username</label>
-                    <input type="text" class="loginInput" size="20" name="username" id="username" /><br />
-
-                    <label for="password">Password</label>
-                    <input type="password" class="loginInput" size="20" name="password" id="password" autocomplete="off" /><br />
-                    
-                    <br />
-                    <p class="submit">
-                        <input type="submit" value="Login" name="Login" />
-                    </p>
-                </fieldset>
-                <input type="hidden" name="user_token" value="f8271b99fbae4e6bd9d6371d76b920a7" />
-            </form>
-        </div> <!-- End of content -->
-
-        <div id="footer">
-            <p><a href="https://github.com/digininja/DVWA/" target="_blank">Damn Vulnerable Web Application (DVWA)</a></p>
-        </div> <!-- End of footer -->
-    </div> <!-- End of wrapper -->
-</body>
-</html>
-
+Cookie is: PHPSESSID=pk488ap5v40cs5hfih7nugq8et; expires=Mon, 24 Mar 2025 11:46:05 GMT; Max-Age=86400; path=/; HttpOnly; SameSite=Strict
+Session is: pk488ap5v40cs5hfih7nugq8et
+Session is: {null=[HTTP/1.1 200 OK], Keep-Alive=[timeout=5, max=100], Server=[Apache/2.4.62 (Debian)], Cache-Control=[no-cache, must-revalidate], Connection=[Keep-Alive], Set-Cookie=[security=impossible; path=/; HttpOnly, PHPSESSID=b74d4v6736svvlj3fkqkchfpqu; expires=Mon, 24 Mar 2025 11:46:05 GMT; Max-Age=86400; path=/; HttpOnly; SameSite=Strict, PHPSESSID=pk488ap5v40cs5hfih7nugq8et; expires=Mon, 24 Mar 2025 11:46:05 GMT; Max-Age=86400; path=/; HttpOnly; SameSite=Strict], Vary=[Accept-Encoding], Expires=[Tue, 23 Jun 2009 12:00:00 GMT], Pragma=[no-cache], Content-Length=[1342], Date=[Sun, 23 Mar 2025 11:46:05 GMT], Content-Type=[text/html;charset=utf-8]}
  */
 
 /*
