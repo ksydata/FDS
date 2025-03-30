@@ -11,5 +11,5 @@ abstract class RequestHandler {
 	
 	// GET, POST(HTTP header method)와 같은 요청 방식을 
 	// 확장성이 높도록 각 기능 클래스에서 구현하기 위해 정의하는 추상 메서드
-	public abstract void sendRequest(String parameter) throws Exception;
+	public abstract String sendRequest(String parameter) throws Exception;
 }

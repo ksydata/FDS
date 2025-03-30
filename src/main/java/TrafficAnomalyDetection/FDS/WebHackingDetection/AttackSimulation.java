@@ -9,5 +9,5 @@ abstract class AttackSimulation {
 		this.url = url;
 	}
 	// 공격 시뮬레이션을 할 수 있도록 각 기능 클래스에서 구현하기 위해 정의하는 추상 메서드
-	public abstract void simulate() throws Exception;
+	public abstract int simulate(String attackURL, String sessionID) throws Exception;
 }

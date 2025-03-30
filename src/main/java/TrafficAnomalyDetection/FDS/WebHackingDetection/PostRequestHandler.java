@@ -16,7 +16,7 @@ class PostRequestHandler extends RequestHandler {
 	// HTTP 요청을 보내고, 서버로부터 응답을 읽어들이는 과정: POST 방식의 요청을 처리하는 기능 메서드
 	// 클라이언트에서 서버에 데이터를 URL에 포함하지 않고 요청의 본문(body)에 포함하여 전송할 때 주로 사용 
 	@Override
-	public void sendRequest(String parameter) throws Exception {
+	public String sendRequest(String parameter) throws Exception {
 		// HTTP url 연결 변수 생성
 		HttpURLConnection connection = (HttpURLConnection) new URL(url)
 				.openConnection();
@@ -62,6 +62,6 @@ class PostRequestHandler extends RequestHandler {
 		// 리소스 해제
 		bufferedReader.close();
 		// 받은 응답을 하나의 문자열로 변환 후 콘솔창에 출력
-		System.out.println(serverResponse.toString());
+		return serverResponse.toString();
 	}
 }

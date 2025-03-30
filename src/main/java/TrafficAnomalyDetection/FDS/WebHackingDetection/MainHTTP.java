@@ -1,5 +1,6 @@
 package TrafficAnomalyDetection.FDS.WebHackingDetection;
 
+import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.Scanner;
 
@@ -14,7 +15,6 @@ import java.util.Scanner;
  * Stored XSS, CSRF, Webshell upload
  * 
  * 3. 악성코드 분석
- * 
  * Network Miner 툴 활용 -> tls 이걸 주로 분석할 수 있음. but, 이해를 못함
  * WireShark의 Statistics-Conversations
  */
@@ -24,78 +24,91 @@ import java.util.Scanner;
 
 public class MainHTTP {
 // 1. 로그인 과정 -> 2. 세션 유지(관리) -> 3. 공격 시뮬레이션
-	public static void main(String[] args) throws Exception {
+	private String dnsURL;
+	private String sessionID;
+	private RequestHandler requestHandler;
+	private AttackSimulation attackSimulation;
+	
+    public MainHTTP(String dnsURL, String method) {
+        this.dnsURL = dnsURL;
+        this.requestHandler = RequestHandlerFactory.getRequestHandler(method, dnsURL);
+    }
+
+    public static void main(String[] args) throws Exception {
         try (Scanner scanner = new Scanner(System.in)) {
-            // 사용자의 외부 입력으로 URL의 기본 호스트 주소(도메인 이름) 및 파라미터 받기
-            System.out.print("Enter the domain name: ");
-        	String dns = scanner.nextLine();
-        	// http://www.dowellcomputer.com/hacking/member/memberLoginAction.jsp
-        	// http://www.dowellcomputer.com/hacking/member/memberUpdateForm.jsp?ID
-        	// http://192.168.56.101/DVWA/login.php
-        	// http://192.168.56.101/DVWA/vulnerabilities/sqli/?id=&Submit=Submit&user_token=1b390a71714157dd68453245206a6061#
-        	
-        	System.out.print("Enter id: ");
-            String memberID = scanner.nextLine();
+            // 사용자에게 도메인 주소 입력 받기
+            System.out.print("Enter the domain name (e.g., http://example.com): ");
+            String dnsURL = scanner.nextLine();
+            // 사용자에게 HTTP 요청 메서드 입력 받기
+            System.out.print("Enter request method (GET/POST): ");
+            String method = scanner.nextLine();
             
+            // MainHTTP 객체 생성
+            MainHTTP mainHttp = new MainHTTP(dnsURL, method);
+
+            // 사용자에게 로그인 페이지 확장자 입력 받기
+            System.out.print("Enter the login page path (e.g. /login.php): ");
+            String loginPage = scanner.nextLine();
+            // 사용자 아이디와 패스워드 입력
+            System.out.print("Enter id: ");
+            String ID = scanner.nextLine();
             System.out.print("Enter password: ");
-            String memberPW = scanner.nextLine();
-            
-            // 호스트, 경로, 쿼리 등 파라미터를 결합한 전체 URL
-            String encodedID = URLEncoder.encode(memberID, "UTF-8");
-            String encodedPW = URLEncoder.encode(memberPW, "UTF-8");
-            String url = dns + "?username=" + encodedID + "&password=" + encodedPW;
-            	// "?memberID=" "&memberPassword="
-            
-            // 모의해킹(공격 시뮬레이션) 수행 여부 확인
-            if (isSimulateAttack(scanner)) {
-                System.out.print("Enter attack Type: ");
+            String PW = scanner.nextLine();
+
+            // 로그인 인증 수행
+            mainHttp.loginSession(dnsURL, loginPage, ID, PW);
+
+            // 공격 수행 여부 확인
+            System.out.print("Do you want to simulate web hacking attack? (Y/N): ");
+            String confirmation = scanner.nextLine();
+
+            if ("Y".equalsIgnoreCase(confirmation)) {
+                System.out.print("Enter the attack type (e.g. XSS, SQLI): ");
                 String attackType = scanner.nextLine();
-                getAttackSimulation(url, attackType, scanner);
+                System.out.print("Enter attack payload: ");
+                String payload = scanner.nextLine();
+                
+                // 웹 모의해킹 수행
+                mainHttp.executeAttack(attackType, payload);
             } else {
-                // 사용자의 외부 입력으로 HTTP 헤더 요청 방식 확인
-                getHttpRequest(url, scanner);
+                System.out.println("Attack simulation canceled.");
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
     }
-
-	private static boolean isSimulateAttack(Scanner scanner) {
-		System.out.print("Do you want to simulate web hacking attack? (Y/N): ");
-		String simulation = scanner.nextLine();
-		return simulation.equalsIgnoreCase("Y");
+	
+	public void loginSession(String dnsURL, String loginPage, String username, String password) throws Exception {
+		String loginURL = dnsURL + loginPage + "&username" + username + "&password" + password;
+		// loginPage = "/login.php"
+		try {
+	        // 로그인 후 세션 아이디 값을 받아 변수에 저장
+			sessionID = requestHandler.sendRequest(loginURL);
+			System.out.println("Session ID: " + sessionID);
+		} catch (Exception e) {
+			// e.printStackTrace();
+            System.err.println("Failed to log in: " + e.getMessage());
+		}
+		// http://www.dowellcomputer.com/hacking/member/memberLoginAction.jsp
+	    // http://www.dowellcomputer.com/hacking/member/memberUpdateForm.jsp?ID
+	    // http://192.168.56.101/DVWA/login.php
+	    // http://192.168.56.101/DVWA/vulnerabilities/sqli/?id=&Submit=Submit&user_token={}
 	}
 	
-    private static void getAttackSimulation(String attackType, String url, Scanner scanner) {
-        System.out.print("Enter attack payload: ");
-        String attackPayload = scanner.nextLine();
-        
-        AttackSimulationFactory factory = new AttackSimulationFactory();
-        AttackSimulation attackSimulation = factory.executeSimulation(attackType, url, attackPayload);
-        try {
-			attackSimulation.simulate();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+    public void executeAttack(String attackType, String payload) throws IOException {
+    	if (sessionID == null || sessionID.isEmpty()) {
+            throw new IllegalStateException("Session ID not found. Please log in first.");
+        }
+    	String attackURL = dnsURL + payload;
+    	// 세션을 유지하면서 공격 요청
+    	try {
+            attackSimulation = AttackSimulationFactory.executeSimulation(attackType, dnsURL, payload);
+			int result = attackSimulation.simulate(attackURL, sessionID);
+			System.out.println("Web Hacking Attack Simulation: " + result);
+    	} catch (Exception e) {
+			// e.printStackTrace();
+            System.err.println("Failed to execute attack: " + e.getMessage());
 		}
     }
-    
-	private static void getHttpRequest(String url, Scanner scanner) {
-        // 사용자의 외부 입력으로 HTTP 헤더 요청 방식 받기
-		System.out.print("Enter request method (GET/POST): ");
-        String method = scanner.nextLine();
-        
-        // 팩토리 클래스로 요청 핸들러 객체를 생성
-        RequestHandler requestHandler = RequestHandlerFactory.getRequestHandler(method, url);
-        try {
-			requestHandler.sendRequest(url);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
 }
-
 
 /*
 Enter the domain name: http://192.168.56.101/DVWA/login.php
