@@ -1,0 +1,128 @@
+/*
+Enter the domain name (e.g., http://example.com): http://192.168.56.101/DVWA
+Enter request method (GET/POST): GET
+Enter the login page path (e.g. /login.php): /login.php
+Enter id: admin
+Enter password: password
+<!DOCTYPE html>
+
+<html lang="en-GB">
+
+	<head>
+
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+
+		<title>Login :: Damn Vulnerable Web Application (DVWA)</title>
+
+		<link rel="stylesheet" type="text/css" href="dvwa/css/login.css" />
+
+	</head>
+
+	<body>
+
+	<div id="wrapper">
+
+	<div id="header">
+
+	<br />
+
+	<p><img src="dvwa/images/login_logo.png" /></p>
+
+	<br />
+
+	</div> <!--<div id="header">-->
+
+	<div id="content">
+
+	<form action="login.php" method="post">
+
+	<fieldset>
+
+			<label for="user">Username</label> <input type="text" class="loginInput" size="20" name="username"><br />
+
+
+			<label for="pass">Password</label> <input type="password" class="loginInput" AUTOCOMPLETE="off" size="20" name="password"><br />
+
+			<br />
+
+			<p class="submit"><input type="submit" value="Login" name="Login"></p>
+
+	</fieldset>
+
+	<input type='hidden' name='user_token' value='5d00730d644fb4f5824b86bb56d2ab39' />
+
+	</form>
+
+	<br />
+
+	
+
+	<br />
+	<br />
+	<br />
+	<br />
+	<br />
+	<br />
+	<br />
+	<br />
+
+	</div > <!--<div id="content">-->
+
+	<div id="footer">
+
+	<p><a href="https://github.com/digininja/DVWA/" target="_blank">Damn Vulnerable Web Application (DVWA)</a></p>
+
+	</div> <!--<div id="footer"> -->
+
+	</div> <!--<div id="wrapper"> -->
+
+	</body>
+
+</html>
+Session ID: uj680jrst3tunnep4ukggj64cc
+Do you want to simulate web hacking attack? (Y/N): Y
+Enter the attack type (e.g. XSS, SQLI): XSS_SQLI
+Enter attack payload: ?user=' OR '1'='1
+Web Hacking Attack Simulation: 400
+ */
+
+/*
+Enter the domain name: http://192.168.56.101/DVWA/login.php
+Enter id: admin
+Enter password: password
+Do you want to simulate web hacking attack? (Y/N): Y
+Enter attack Type: XSS_SQLINJECTION
+Enter attack payload: <script>alert('XSS')</script>
+java.lang.IllegalArgumentException: Invalid attack type http://192.168.56.101/DVWA/login.php?username=admin&password=password
+ */
+
+/*
+Enter the domain name: http://192.168.56.101/DVWA/login.php
+Enter id: admin
+Enter password: password
+Do you want to simulate web hacking attack? (Y/N): N
+Enter request method (GET/POST): GET
+Cookie is: PHPSESSID=pk488ap5v40cs5hfih7nugq8et; expires=Mon, 24 Mar 2025 11:46:05 GMT; Max-Age=86400; path=/; HttpOnly; SameSite=Strict
+Session is: pk488ap5v40cs5hfih7nugq8et
+Session is: {null=[HTTP/1.1 200 OK], Keep-Alive=[timeout=5, max=100], Server=[Apache/2.4.62 (Debian)], Cache-Control=[no-cache, must-revalidate], Connection=[Keep-Alive], Set-Cookie=[security=impossible; path=/; HttpOnly, PHPSESSID=b74d4v6736svvlj3fkqkchfpqu; expires=Mon, 24 Mar 2025 11:46:05 GMT; Max-Age=86400; path=/; HttpOnly; SameSite=Strict, PHPSESSID=pk488ap5v40cs5hfih7nugq8et; expires=Mon, 24 Mar 2025 11:46:05 GMT; Max-Age=86400; path=/; HttpOnly; SameSite=Strict], Vary=[Accept-Encoding], Expires=[Tue, 23 Jun 2009 12:00:00 GMT], Pragma=[no-cache], Content-Length=[1342], Date=[Sun, 23 Mar 2025 11:46:05 GMT], Content-Type=[text/html;charset=utf-8]}
+ */
+
+/*
+Enter the domain name: http://www.dowellcomputer.com/hacking/member/memberLoginAction.jsp
+Enter id: alwayssummer
+Enter password: password
+
+Enter request method (GET/POST): GET
+Session is: JSESSIONID=CA3C59D94F0B1F3AFB04C4A6023F9CD1; Path=/; HttpOnly
+
+Enter request method (GET/POST): POST
+HTTP Response Code: 200
+HTTP Response Message: OK
+<script>location.href='../main.jsp';</script>
+<script>alert('아이디가 존재하지 않습니다.');location.href='./memberLoginForm.jsp';</script>
+<script>alert('비밀번호가 일치하지 않습니다.');location.href='./memberLoginForm.jsp';</script>
+
+HTTP Response Code: 404
+java.io.FileNotFoundException: URL
+HTTP Response Message: Not Found
+*/
