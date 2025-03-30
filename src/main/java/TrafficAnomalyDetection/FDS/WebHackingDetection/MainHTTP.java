@@ -1,7 +1,11 @@
 package TrafficAnomalyDetection.FDS.WebHackingDetection;
 
 import java.io.IOException;
-import java.net.URLEncoder;
+import java.net.CookieManager;
+import java.net.CookieStore;
+import java.util.HashMap;
+import java.util.Map;
+//import java.net.URLEncoder;
 import java.util.Scanner;
 
 /* 
@@ -28,10 +32,12 @@ public class MainHTTP {
 	private String sessionID;
 	private RequestHandler requestHandler;
 	private AttackSimulation attackSimulation;
-	
+    private CookieStore cookieStore;
+    
     public MainHTTP(String dnsURL, String method) {
         this.dnsURL = dnsURL;
         this.requestHandler = RequestHandlerFactory.getRequestHandler(method, dnsURL);
+        this.cookieStore = new CookieManager().getCookieStore();
     }
 
     public static void main(String[] args) throws Exception {
@@ -76,12 +82,15 @@ public class MainHTTP {
         }
     }
 	
-	public void loginSession(String dnsURL, String loginPage, String username, String password) throws Exception {
-		String loginURL = dnsURL + loginPage + "&username" + username + "&password" + password;
-		// loginPage = "/login.php"
-		try {
+	public void loginSession(String loginPage, String username, String password) throws Exception {
+        Map<String, String> loginParams = new HashMap<>();
+        loginParams.put("username", username);
+        loginParams.put("password", password);
+		// String loginURL = dnsURL + loginPage + "&username" + username + "&password" + password;
+
+        try {
 	        // 로그인 후 세션 아이디 값을 받아 변수에 저장
-			sessionID = requestHandler.sendRequest(loginURL);
+			sessionID = requestHandler.sendRequest(cookieStore, loginParams);
 			System.out.println("Session ID: " + sessionID);
 		} catch (Exception e) {
 			// e.printStackTrace();
@@ -106,6 +115,6 @@ public class MainHTTP {
     	} catch (Exception e) {
 			// e.printStackTrace();
             System.err.println("Failed to execute attack: " + e.getMessage());
-		}
+            // e.g. payload: /vulnerabilities/sqli/?id=1' OR '1'='1		}
     }
 }
