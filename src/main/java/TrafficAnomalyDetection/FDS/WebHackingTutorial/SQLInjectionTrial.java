@@ -7,7 +7,7 @@ import java.util.*;
 import java.util.regex.*;
 
 public class SQLInjectionTrial {
-    private static final String BASE_URL = "http://192.168.219.104/DVWA";
+    private static final String BASE_URL = "http://192.168.219.103/DVWA";
     private static final String LOGIN_URL = BASE_URL + "/login.php";
     private static final String ATTACK_URL = BASE_URL + "/vulnerabilities/sqli/";
     private static String csrfToken = null;
@@ -54,16 +54,7 @@ public class SQLInjectionTrial {
 
         System.out.println("❌ 로그인 실패! 응답 본문에 성공 메시지가 없음.");
         return false;
-    }
-    
-    // ✅ Set-Cookie 값 가져오기
-    private Map<String, List<String>> getResponseHeaders(String urlString) throws Exception {
-        URL url = new URL(urlString);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        return conn.getHeaderFields();
-    }
-    
-    
+    }   
 
     // ✅ SQL Injection 공격 요청
     private void sendAttack(String payload) throws Exception {
@@ -134,7 +125,7 @@ public class SQLInjectionTrial {
             String[] parts = cookie.split("=", 2);
             if (parts.length == 2) {
                 HttpCookie httpCookie = new HttpCookie(parts[0].trim(), parts[1].trim());
-                httpCookie.setDomain("192.168.219.104");  // 🔥 DVWA 서버 도메인 설정
+                httpCookie.setDomain("192.168.219.103");  // 🔥 DVWA 서버 도메인 설정
                 httpCookie.setPath("/DVWA/");            // 🔥 DVWA 경로 설정
                 cookieStore.add(URI.create(BASE_URL), httpCookie);
             }
